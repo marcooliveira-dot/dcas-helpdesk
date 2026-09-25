@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h3>Novo Equipamento</h3>
+
+<form method="post">
+
+    {% csrf_token %}
+
+    <div class="mb-3">
+        <label>Nome</label>
+        {{ form.nome }}
+    </div>
+
+    <div class="mb-3">
+        <label>Patrimônio</label>
+        {{ form.patrimonio }}
+    </div>
+
+    <div class="mb-3">
+        <label>Tipo</label>
+        {{ form.tipo }}
+    </div>
+
+    <button class="btn btn-success">
+        Salvar Equipamento
+    </button>
+
+</form>
+
+</div>
+
+{% endblock %}

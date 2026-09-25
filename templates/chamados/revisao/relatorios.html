@@ -1,0 +1,4 @@
+{% extends 'base.html' %}
+{% block title %}Relatórios | DCAS HelpDesk{% endblock %}
+{% block page_title %}Relatórios{% endblock %}
+{% block content %}<p>Totais atuais de chamados e equipamentos por status.</p><div class="row g-4"><div class="col-md-6"><section class="card border-0 p-4"><h2 class="h5">Chamados</h2><table class="table"><thead><tr><th>Status</th><th>Total</th></tr></thead><tbody>{% for nome,total in chamados %}<tr><td>{{ nome }}</td><td>{{ total }}</td></tr>{% empty %}<tr><td colspan="2">Sem registros.</td></tr>{% endfor %}</tbody></table></section></div><div class="col-md-6"><section class="card border-0 p-4"><h2 class="h5">Equipamentos</h2><table class="table"><thead><tr><th>Status</th><th>Total</th></tr></thead><tbody>{% for nome,total in equipamentos %}<tr><td>{{ nome }}</td><td>{{ total }}</td></tr>{% empty %}<tr><td colspan="2">Sem registros.</td></tr>{% endfor %}</tbody></table></section></div></div>{% endblock %}

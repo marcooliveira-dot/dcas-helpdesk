@@ -1,0 +1,236 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Novo Chamado | DCAS Group</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .novo-chamado {
+            margin: 0;
+            background: #f3f5f9;
+            color: #172033;
+            font-family: Arial, sans-serif;
+        }
+
+        .novo-chamado * {
+            box-sizing: border-box;
+        }
+
+        .chamado-container {
+            width: min(100% - 32px, 720px);
+            margin: 48px auto;
+        }
+
+        .chamado-voltar {
+            color: #2456a6;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .chamado-cabecalho {
+            margin: 28px 0;
+        }
+
+        .chamado-cabecalho h1 {
+            margin: 0 0 10px;
+            font-size: clamp(26px, 5vw, 34px);
+        }
+
+        .chamado-cabecalho p {
+            margin: 0;
+            color: #536176;
+            line-height: 1.6;
+        }
+
+        .chamado-card {
+            padding: 32px;
+            background: #fff;
+            border: 1px solid #dce2eb;
+            border-radius: 16px;
+            box-shadow: 0 8px 28px rgb(23 32 51 / 5%);
+        }
+
+        .chamado-campo {
+            margin-bottom: 24px;
+        }
+
+        .chamado-campo label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .chamado-campo input:not([type="checkbox"]):not([type="radio"]),
+        .chamado-campo textarea,
+        .chamado-campo select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #aab5c5;
+            border-radius: 8px;
+            background: #fff;
+            color: #172033;
+            font: inherit;
+        }
+
+        .chamado-campo textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .novo-chamado :focus-visible {
+            outline: 3px solid #2563eb;
+            outline-offset: 3px;
+        }
+
+        .chamado-ajuda {
+            margin: 8px 0 0;
+            color: #536176;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .chamado-campo .errorlist {
+            padding-left: 20px;
+            margin: 8px 0 0;
+            color: #a61b1b;
+            font-size: 14px;
+        }
+
+        .chamado-campo.com-erro input,
+        .chamado-campo.com-erro textarea,
+        .chamado-campo.com-erro select {
+            border-color: #a61b1b;
+        }
+
+        .chamado-alerta {
+            margin-bottom: 24px;
+            padding: 14px 16px;
+            border: 1px solid #dce2eb;
+            border-radius: 8px;
+            background: #f3f5f9;
+            line-height: 1.5;
+        }
+
+        .chamado-alerta.erro {
+            border-color: #efb4b4;
+            background: #fff3f3;
+            color: #a61b1b;
+        }
+
+        .chamado-acoes {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e9f0;
+        }
+
+        .chamado-botao {
+            padding: 13px 24px;
+            border: 0;
+            border-radius: 8px;
+            background: #2456a6;
+            color: #fff;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .chamado-botao:hover {
+            background: #193f7d;
+        }
+
+        @media (max-width: 480px) {
+            .chamado-container {
+                margin: 24px auto;
+            }
+
+            .chamado-card {
+                padding: 20px;
+            }
+
+            .chamado-acoes {
+                flex-direction: column-reverse;
+                align-items: stretch;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body class="novo-chamado">
+    <main class="chamado-container">
+        <a class="chamado-voltar" href="{% url 'dashboard' %}">
+            ← Voltar ao painel
+        </a>
+
+        <header class="chamado-cabecalho">
+            <h1>Abrir novo chamado</h1>
+            <p>Descreva o problema para que nossa equipe possa ajudar.</p>
+        </header>
+
+        {% for message in messages %}
+            <div class="chamado-alerta" role="status">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <section class="chamado-card" aria-label="Formulário de abertura de chamado">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div class="chamado-alerta erro" role="alert">
+                        Não foi possível abrir o chamado.
+                        Confira os campos indicados abaixo.
+                        {{ form.non_field_errors }}
+
+                        {% for hidden in form.hidden_fields %}
+                            {% for error in hidden.errors %}
+                                <div>{{ hidden.name }}: {{ error }}</div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+
+                {% for field in form.visible_fields %}
+                    <div class="chamado-campo{% if field.errors %} com-erro{% endif %}">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span aria-hidden="true">*</span>
+                            {% endif %}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.help_text %}
+                            <div class="chamado-ajuda" id="{{ field.auto_id }}_helptext">
+                                {{ field.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {{ field.errors }}
+                    </div>
+                {% endfor %}
+
+                <div class="chamado-acoes">
+                    <a class="chamado-voltar" href="{% url 'dashboard' %}">
+                        Cancelar
+                    </a>
+                    <button class="chamado-botao" type="submit">
+                        Criar chamado
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

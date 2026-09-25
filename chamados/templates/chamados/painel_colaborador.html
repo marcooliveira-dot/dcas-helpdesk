@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Painel do Colaborador</h1>
+<p>Bem-vindo, <strong>{{ user.username }}</strong> 👋</p>
+
+<hr>
+
+<div style="margin-bottom:20px;">
+    <a href="/chamado/novo/" 
+       style="
+       background-color:#2563eb;
+       color:white;
+       padding:12px 20px;
+       text-decoration:none;
+       border-radius:6px;
+       font-weight:bold;
+       ">
+       ➕ Abrir Novo Chamado
+    </a>
+</div>
+
+<h3>📋 Seus Chamados</h3>
+
+{% if chamados %}
+    <table style="width:100%; border-collapse: collapse;">
+        <tr style="background:#f3f4f6;">
+            <th style="padding:10px; text-align:left;">Título</th>
+            <th>Status</th>
+            <th>Prioridade</th>
+            <th>Criado em</th>
+        </tr>
+
+        {% for chamado in chamados %}
+        <tr style="border-bottom:1px solid #e5e7eb;">
+            <td style="padding:10px;">{{ chamado.titulo }}</td>
+            <td>{{ chamado.status }}</td>
+            <td>{{ chamado.prioridade }}</td>
+            <td>{{ chamado.data_criacao|date:"d/m/Y H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>Você ainda não abriu nenhum chamado.</p>
+{% endif %}
+
+{% endblock %}
+
+

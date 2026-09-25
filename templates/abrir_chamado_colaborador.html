@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Abrir Chamado | DCAS Group</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        body {
+            margin: 0;
+            background: #f3f5f9;
+            color: #1e293b;
+            font-family: Arial, sans-serif;
+        }
+
+        .suporte-header {
+            padding: 22px 24px;
+            background: #17345c;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .suporte-header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .suporte-container {
+            max-width: 720px;
+            margin: 36px auto;
+            padding: 0 16px;
+        }
+
+        .suporte-card {
+            background: white;
+            padding: 28px;
+            border: 1px solid #dce3ed;
+            border-radius: 14px;
+        }
+
+        .suporte-card h2 {
+            margin: 0 0 10px;
+        }
+
+        .suporte-intro {
+            margin: 0 0 28px;
+            color: #526176;
+            line-height: 1.5;
+        }
+
+        .suporte-campo {
+            margin-bottom: 22px;
+        }
+
+        .suporte-campo label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .suporte-campo input:not([type="checkbox"]):not([type="radio"]),
+        .suporte-campo textarea,
+        .suporte-campo select {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #aab6c6;
+            border-radius: 8px;
+            background: white;
+            color: #1e293b;
+            font: inherit;
+        }
+
+        .suporte-campo textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .suporte-container :focus-visible {
+            outline: 3px solid #2563eb;
+            outline-offset: 3px;
+        }
+
+        .suporte-ajuda {
+            margin-top: 8px;
+            color: #526176;
+            font-size: 14px;
+        }
+
+        .errorlist {
+            color: #a51d24;
+            padding-left: 20px;
+            line-height: 1.5;
+        }
+
+        .suporte-alerta {
+            padding: 14px;
+            margin-bottom: 20px;
+            border: 1px solid #ccd7e5;
+            border-radius: 8px;
+            background: #f3f6fa;
+            line-height: 1.5;
+        }
+
+        .suporte-alerta-erro {
+            background: #fff1f2;
+            border-color: #e6a5ad;
+            color: #a51d24;
+        }
+
+        .suporte-acoes {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 28px;
+        }
+
+        .suporte-acoes a {
+            color: #174b95;
+        }
+
+        .suporte-enviar {
+            padding: 13px 24px;
+            border: 0;
+            border-radius: 8px;
+            background: #174b95;
+            color: white;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .suporte-enviar:hover {
+            background: #10366d;
+        }
+
+        @media (max-width: 480px) {
+            .suporte-card {
+                padding: 20px;
+            }
+
+            .suporte-enviar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="suporte-header">
+        <h1>Suporte de T.I – DCAS Group</h1>
+        <span>
+            {{ request.user.first_name|default:request.user.username }}
+        </span>
+    </header>
+
+    <main class="suporte-container">
+        {% for message in messages %}
+            <div class="suporte-alerta" role="status">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <section class="suporte-card" aria-labelledby="titulo-pagina">
+            <h2 id="titulo-pagina">Abrir chamado</h2>
+            <p class="suporte-intro">
+                Descreva o problema para nossa equipe de T.I.
+                Os campos com * são obrigatórios.
+            </p>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div class="suporte-alerta suporte-alerta-erro" role="alert">
+                        Confira os erros abaixo antes de enviar novamente.
+                        {{ form.non_field_errors }}
+
+                        {% for hidden in form.hidden_fields %}
+                            {% for error in hidden.errors %}
+                                <div>{{ hidden.name }}: {{ error }}</div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+
+                {% for field in form.visible_fields %}
+                    <div class="suporte-campo">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span aria-hidden="true">*</span>
+                            {% endif %}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.help_text %}
+                            <div
+                                class="suporte-ajuda"
+                                id="{{ field.auto_id }}_helptext"
+                            >
+                                {{ field.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {{ field.errors }}
+                    </div>
+                {% endfor %}
+
+                <div class="suporte-acoes">
+                    <a href="{% url 'dashboard' %}">Voltar ao painel</a>
+                    <button class="suporte-enviar" type="submit">
+                        Enviar chamado
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

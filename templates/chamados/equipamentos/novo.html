@@ -1,0 +1,4 @@
+{% extends 'base.html' %}
+{% block title %}Novo equipamento | DCAS HelpDesk{% endblock %}
+{% block page_title %}Novo equipamento{% endblock %}
+{% block content %}<section class="card border-0 p-4"><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}<div class="text-danger">{{ field.errors }}</div></div>{% endfor %}<button class="btn btn-primary">Salvar equipamento</button><a class="btn btn-outline-secondary ms-2" href="{% url 'equipamentos' %}">Cancelar</a></form></section>{% endblock %}

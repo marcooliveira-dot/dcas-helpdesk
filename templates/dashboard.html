@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Portal de Chamados | DCAS Group</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<div class="header">
+    <h1>Portal de Chamados – DCAS Group</h1>
+    <a href="/novo/" class="btn">+ Novo Chamado</a>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>Meus Chamados</h2>
+
+        {% for c in chamados %}
+        <div class="chamado">
+            <div>
+                <strong>{{ c.titulo }}</strong><br>
+                Prioridade: {{ c.prioridade|title }}
+            </div>
+            <span class="status {{ c.status }}">{{ c.status|upper }}</span>
+        </div>
+        {% empty %}
+        <p>Nenhum chamado encontrado.</p>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>

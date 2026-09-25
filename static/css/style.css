@@ -1,0 +1,506 @@
+/* ==========================================================
+   RESET
+========================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    font-family:"Segoe UI",sans-serif;
+
+    background:#eef2f7;
+
+    color:#2d3748;
+
+}
+
+.wrapper{
+
+    display:flex;
+
+    min-height:100vh;
+
+}
+
+/* ==========================================================
+   SIDEBAR
+========================================================== */
+
+.sidebar{
+
+    width:260px;
+
+    background:linear-gradient(180deg,#0f172a,#1e293b);
+
+    color:#fff;
+
+    display:flex;
+
+    flex-direction:column;
+
+    padding:25px;
+
+    box-shadow:5px 0 20px rgba(0,0,0,.15);
+
+}
+
+.logo{
+
+    text-align:center;
+
+    margin-bottom:35px;
+
+}
+
+.logo i{
+
+    font-size:55px;
+
+    color:#3b82f6;
+
+}
+
+.logo h3{
+
+    margin-top:10px;
+
+    margin-bottom:0;
+
+    font-weight:700;
+
+}
+
+.logo span{
+
+    color:#94a3b8;
+
+    font-size:14px;
+
+}
+
+.sidebar ul{
+
+    list-style:none;
+
+    padding:0;
+
+}
+
+.sidebar li{
+
+    margin-bottom:8px;
+
+}
+
+.sidebar a{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    transition:.3s;
+
+}
+
+.sidebar a i{
+
+    font-size:20px;
+
+}
+
+.sidebar a:hover{
+
+    background:#2563eb;
+
+    transform:translateX(6px);
+
+}
+
+.main{
+
+    flex:1;
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.topbar{
+
+    background:white;
+
+    padding:18px 30px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+
+}
+
+.topbar h2{
+
+    font-size:28px;
+
+    font-weight:700;
+
+}
+
+.user-info{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+}
+
+.user-info i{
+
+    font-size:34px;
+
+    color:#2563eb;
+
+}
+
+.content{
+
+    padding:35px;
+
+}
+
+.card-dashboard{
+
+    background:white;
+
+    border:none;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    transition:.3s;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+}
+
+.card-dashboard:hover{
+
+    transform:translateY(-6px);
+
+}
+
+.table{
+
+    background:white;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+}
+
+.table thead{
+
+    background:#2563eb;
+
+    color:white;
+
+}
+
+.sidebar-footer{
+
+    margin-top:auto;
+
+}
+
+.sidebar-footer a{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+}
+
+/* ==========================================================
+CARDS COLORIDOS
+========================================================== */
+
+.card-primary{
+    background: linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:#fff;
+}
+
+.card-success{
+    background: linear-gradient(135deg,#16a34a,#15803d);
+    color:#fff;
+}
+
+.card-warning{
+    background: linear-gradient(135deg,#f59e0b,#d97706);
+    color:#fff;
+}
+
+.card-danger{
+    background: linear-gradient(135deg,#dc2626,#b91c1c);
+    color:#fff;
+}
+
+.card-dark{
+    background: linear-gradient(135deg,#334155,#0f172a);
+    color:#fff;
+}
+
+/* ==========================================================
+ÍCONE DOS CARDS
+========================================================== */
+
+.card-icon{
+
+    font-size:55px;
+
+    opacity:.20;
+
+    transition:.3s;
+
+}
+
+.card-dashboard:hover .card-icon{
+
+    transform:scale(1.15) rotate(-8deg);
+
+    opacity:.45;
+
+}
+
+/* ==========================================================
+CARD HEADER
+========================================================== */
+
+.card-header{
+
+    background:transparent;
+
+    border-bottom:1px solid #e5e7eb;
+
+    padding-bottom:15px;
+
+    margin-bottom:20px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+.card-header h5{
+
+    margin:0;
+
+    font-weight:700;
+
+}
+
+/* ==========================================================
+BADGES
+========================================================== */
+
+.badge{
+
+    padding:8px 14px;
+
+    border-radius:30px;
+
+    font-size:12px;
+
+    font-weight:600;
+
+}
+
+/* ==========================================================
+BOTÕES
+========================================================== */
+
+.btn{
+
+    border-radius:12px;
+
+    transition:.3s;
+
+}
+
+.btn:hover{
+
+    transform:translateY(-2px);
+
+}
+
+/* ==========================================================
+TABELAS
+========================================================== */
+
+.table{
+
+    margin-bottom:0;
+
+}
+
+.table th{
+
+    font-weight:700;
+
+    white-space:nowrap;
+
+}
+
+.table td{
+
+    vertical-align:middle;
+
+}
+
+/* ==========================================================
+RESPONSIVIDADE
+========================================================== */
+
+@media (max-width:992px){
+
+    .sidebar{
+
+        width:80px;
+
+    }
+
+    .sidebar h3,
+
+    .sidebar span{
+
+        display:none;
+
+    }
+
+    .sidebar a{
+
+        justify-content:center;
+
+    }
+
+    .sidebar a span{
+
+        display:none;
+
+    }
+
+    .content{
+
+        padding:20px;
+
+    }
+
+}
+
+@media (max-width:768px){
+
+    .wrapper{
+
+        flex-direction:column;
+
+    }
+
+    .sidebar{
+
+        width:100%;
+
+        height:auto;
+
+    }
+
+    .topbar{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:15px;
+
+    }
+
+}
+
+/* ==========================================================
+SCROLL
+========================================================== */
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#2563eb;
+
+    border-radius:10px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#e5e7eb;
+
+}
+
+/* ==========================================================
+ANIMAÇÃO
+========================================================== */
+
+@keyframes aparecer{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(20px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+.card-dashboard{
+
+    animation:aparecer .5s ease;
+
+}

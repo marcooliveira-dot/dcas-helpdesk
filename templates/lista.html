@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Chamados{% endblock %}
+
+{% block content %}
+<h1>Chamados</h1>
+
+<div class="card">
+    <table width="100%">
+        <tr>
+            <th>ID</th>
+            <th>Título</th>
+            <th>Status</th>
+        </tr>
+        {% for chamado in chamados %}
+        <tr>
+            <td>{{ chamado.id }}</td>
+            <td>{{ chamado.titulo }}</td>
+            <td>{{ chamado.status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

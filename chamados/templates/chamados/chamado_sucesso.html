@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Chamado enviado | DCAS HelpDesk{% endblock %}
+
+{% block page_title %}Chamado enviado{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center"
+     style="min-height: 65vh;">
+
+    <section
+        class="card shadow-sm border-0 rounded-4 text-center p-4 p-md-5"
+        style="max-width: 520px; width: 100%;"
+        aria-labelledby="titulo-sucesso"
+    >
+        <div class="mb-4">
+            <i class="bi bi-check-circle-fill text-success"
+               style="font-size: 64px;"
+               aria-hidden="true"></i>
+        </div>
+
+        <h2 id="titulo-sucesso" class="h3 fw-bold text-success mb-3">
+            Chamado aberto com sucesso!
+        </h2>
+
+        <p class="text-secondary mb-4">
+            Sua solicitação foi registrada e aguarda análise
+            da equipe de T.I.
+        </p>
+
+        <a href="/chamado/novo/"
+           class="btn btn-primary w-100 py-3 fw-semibold">
+            <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>
+            Abrir outro chamado
+        </a>
+    </section>
+</div>
+{% endblock %}

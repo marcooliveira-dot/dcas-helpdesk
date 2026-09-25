@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}Administração | DCAS HelpDesk{% endblock %}
+{% block page_title %}Painel administrativo{% endblock %}
+
+{% block css %}
+<style>
+    .admin-panel {
+        --admin-border: #dce3ed;
+    }
+
+    .admin-panel .admin-card {
+        background: white;
+        border: 1px solid var(--admin-border);
+        border-radius: 14px;
+        height: 100%;
+    }
+
+    .admin-panel .admin-stat {
+        padding: 20px;
+    }
+
+    .admin-panel .admin-stat-label {
+        color: #526176;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .admin-panel .admin-stat-value {
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .admin-panel .admin-section {
+        padding: 24px;
+    }
+
+    .admin-panel .admin-section-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 8px;
+    }
+
+    .admin-panel .admin-muted {
+        color: #526176;
+        font-size: 14px;
+    }
+
+    .admin-panel .admin-summary {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid #edf0f5;
+    }
+
+    .admin-panel .admin-summary:last-child {
+        border-bottom: 0;
+    }
+
+    .admin-panel .table th {
+        color: #526176;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .admin-panel .table td {
+        font-size: 14px;
+        padding-top: 16px;
+        padding-bottom: 16px;
+    }
+
+    .admin-panel .admin-ticket-title {
+        min-width: 180px;
+        max-width: 340px;
+        overflow-wrap: anywhere;
+    }
+
+    .admin-panel .admin-event {
+        padding: 14px 0;
+        border-bottom: 1px solid #edf0f5;
+    }
+
+    .admin-panel .admin-event:last-child {
+        border-bottom: 0;
+    }
+
+    .admin-panel .admin-attention {
+        background: #fff8e8;
+        border: 1px solid #ecd39a;
+        border-radius: 10px;
+        padding: 16px;
+    }
+
+    @media (max-width: 575px) {
+        .admin-panel .admin-section {
+            padding: 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-panel">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h2 class="h5 mb-1">Visão geral do suporte</h2>
+            <p class="admin-muted mb-0">
+                Acompanhe solicitações, equipamentos e atividades.
+                Indicadores gerais; os filtros afetam apenas a lista de chamados.
+            </p>
+        </div>
+
+        <a href="{% url 'equipamentos' %}" class="btn btn-primary">
+            <i class="bi bi-laptop me-1" aria-hidden="true"></i>
+            Gerenciar equipamentos
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-2">
+            <div class="admin-card admin-stat">
+                <div class="admin-stat-label">Total de chamados</div>
+                <div class="admin-stat-value">{{ total_chamados }}</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-2">
+            <div class="admin-card admin-stat">
+                <div class="admin-stat-label">Abertos</div>
+                <div class="admin-stat-value text-danger">{{ abertos }}</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-2">
+            <div class="admin-card admin-stat">
+                <div class="admin-stat-label">Em andamento</div>
+                <div class="admin-stat-value text-primary">{{ andamento }}</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-2">
+            <div class="admin-card admin-stat">
+                <div class="admin-stat-label">Aguardando cliente</div>
+                <div class="admin-stat-value">{{ aguardando }}</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-2">
+            <div class="admin-card admin-stat">
+                <div class="admin-stat-label">Resolvidos</div>
+                <div class="admin-stat-value text-success">{{ resolvidos }}</div>
+            </div>
+        </div>
+
+        <div class="col-6 col-xl-2">
+            <div class="admin-card admin-stat">
+                <div class="admin-stat-label">Fechados</div>
+                <div class="admin-stat-value text-secondary">{{ fechados }}</div>
+            </div>
+        </div>
+    </div>
+
+    {% if urgentes or sem_responsavel %}
+        <div class="admin-attention mb-4" role="status">
+            <strong>Atenção aos chamados pendentes:</strong>
+            {{ urgentes }} urgente{{ urgentes|pluralize:"s" }}
+            e {{ sem_responsavel }} sem responsável.
+            Um chamado pode estar nos dois grupos.
+        </div>
+    {% endif %}
+
+    <section id="chamados" class="admin-card admin-section mb-4"
+             aria-labelledby="titulo-chamados">
+        <h2 id="titulo-chamados" class="admin-section-title">
+            Gerenciamento de chamados
+        </h2>
+        <p class="admin-muted">
+            Pesquise pelo protocolo, título ou solicitante.
+        </p>
+
+        <form method="get" action="{% url 'painel_admin' %}#chamados"
+              class="row g-3 mb-4">
+            <div class="col-12 col-lg-4">
+                <label for="busca" class="form-label">Pesquisar</label>
+                <input
+                    type="search"
+                    id="busca"
+                    name="busca"
+                    class="form-control"
+                    value="{{ busca }}"
+                    placeholder="Ex.: TK-000010 ou computador"
+                >
+            </div>
+
+            <div class="col-12 col-md-4 col-lg-2">
+                <label for="status" class="form-label">Status</label>
+                <select id="status" name="status" class="form-select">
+                    <option value="">Todos</option>
+                    {% for valor, rotulo in status_opcoes %}
+                        <option value="{{ valor }}"
+                                {% if status == valor %}selected{% endif %}>
+                            {{ rotulo }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-12 col-md-4 col-lg-2">
+                <label for="prioridade" class="form-label">Prioridade</label>
+                <select id="prioridade" name="prioridade" class="form-select">
+                    <option value="">Todas</option>
+                    {% for valor, rotulo in prioridade_opcoes %}
+                        <option value="{{ valor }}"
+                                {% if prioridade == valor %}selected{% endif %}>
+                            {{ rotulo }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-12 col-md-4 col-lg-2">
+                <label for="categoria" class="form-label">Categoria</label>
+                <select id="categoria" name="categoria" class="form-select">
+                    <option value="">Todas</option>
+                    {% for valor, rotulo in categoria_opcoes %}
+                        <option value="{{ valor }}"
+                                {% if categoria == valor %}selected{% endif %}>
+                            {{ rotulo }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-12 col-lg-2 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+                <a href="{% url 'painel_admin' %}#chamados"
+                   class="btn btn-outline-secondary">
+                    Limpar
+                </a>
+            </div>
+        </form>
+
+        <p class="admin-muted">
+            {{ pagina.paginator.count }} chamado{{ pagina.paginator.count|pluralize:"s" }}
+            encontrado{{ pagina.paginator.count|pluralize:"s" }}.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col">Chamado</th>
+                        <th scope="col">Categoria</th>
+                        <th scope="col">Prioridade</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Solicitante</th>
+                        <th scope="col">Responsável</th>
+                        <th scope="col">Abertura</th>
+                        <th scope="col">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for chamado in pagina %}
+                        <tr>
+                            <td class="admin-ticket-title">
+                                <div class="fw-bold text-primary">
+                                    <a href="{% url 'detalhe_chamado' chamado.pk %}">{{ chamado.ticket }}</a>
+                                </div>
+                                <div>{{ chamado.titulo }}</div>
+                            </td>
+
+                            <td>
+                                {{ chamado.get_categoria_display|default:"Não informada" }}
+                            </td>
+
+                            <td>
+                                {% if chamado.prioridade == "urgente" %}
+                                    <span class="badge bg-danger">Urgente</span>
+                                {% elif chamado.prioridade == "alta" %}
+                                    <span class="badge bg-warning text-dark">Alta</span>
+                                {% else %}
+                                    {{ chamado.get_prioridade_display }}
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <span class="badge {% if chamado.status == 'aberto' %}bg-danger{% elif chamado.status == 'em_andamento' %}bg-primary{% elif chamado.status == 'aguardando' %}bg-warning text-dark{% elif chamado.status == 'resolvido' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ chamado.get_status_display }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ chamado.criado_por.get_full_name|default:chamado.criado_por.username }}
+                            </td>
+
+                            <td>
+                                {% if chamado.atribuido_a %}
+                                    {{ chamado.atribuido_a.get_full_name|default:chamado.atribuido_a.username }}
+                                {% else %}
+                                    <span class="text-secondary">Não atribuído</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-nowrap">
+                                {{ chamado.data_criacao|date:"d/m/Y" }}
+                                <div class="admin-muted">
+                                    {{ chamado.data_criacao|date:"H:i" }}
+                                </div>
+                            </td>
+
+                            <td>
+                                {% if chamado.status != "resolvido" and chamado.status != "fechado" %}
+                                    <form method="post"
+                                          action="{% url 'finalizar_chamado' chamado.id %}">
+                                        {% csrf_token %}
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-success btn-sm"
+                                            aria-label="Finalizar chamado {{ chamado.ticket }}"
+                                        >
+                                            Finalizar
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-secondary">Finalizado</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-secondary">
+                                Nenhum chamado encontrado para esta pesquisa.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if pagina.has_other_pages %}
+            <nav aria-label="Paginação de chamados"
+                 class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-3">
+                <span class="admin-muted">
+                    Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}
+                </span>
+
+                <div class="d-flex gap-2">
+                    {% if pagina.has_previous %}
+                        <a class="btn btn-outline-secondary btn-sm"
+                           href="?{% if filtros_url %}{{ filtros_url }}&amp;{% endif %}page={{ pagina.previous_page_number }}#chamados">
+                            Anterior
+                        </a>
+                    {% endif %}
+
+                    {% if pagina.has_next %}
+                        <a class="btn btn-outline-secondary btn-sm"
+                           href="?{% if filtros_url %}{{ filtros_url }}&amp;{% endif %}page={{ pagina.next_page_number }}#chamados">
+                            Próxima
+                        </a>
+                    {% endif %}
+                </div>
+            </nav>
+        {% endif %}
+    </section>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-4">
+            <section class="admin-card admin-section"
+                     aria-labelledby="titulo-patrimonio">
+                <h2 id="titulo-patrimonio" class="admin-section-title">
+                    Equipamentos
+                </h2>
+                <p class="admin-muted">
+                    {{ total_equipamentos }} equipamento{{ total_equipamentos|pluralize:"s" }}
+                    cadastrado{{ total_equipamentos|pluralize:"s" }}.
+                </p>
+
+                <div class="admin-summary">
+                    <span>Disponíveis</span>
+                    <strong>{{ disponiveis }}</strong>
+                </div>
+                <div class="admin-summary">
+                    <span>Em uso</span>
+                    <strong>{{ em_uso }}</strong>
+                </div>
+                <div class="admin-summary">
+                    <span>Em manutenção</span>
+                    <strong>{{ em_manutencao }}</strong>
+                </div>
+                <div class="admin-summary">
+                    <span>Com defeito</span>
+                    <strong>{{ com_defeito }}</strong>
+                </div>
+                <div class="admin-summary">
+                    <span>Reservados</span>
+                    <strong>{{ reservados }}</strong>
+                </div>
+                <div class="admin-summary">
+                    <span>Baixados</span>
+                    <strong>{{ baixados }}</strong>
+                </div>
+
+                <a href="{% url 'equipamentos' %}"
+                   class="btn btn-outline-primary w-100 mt-3">
+                    Consultar equipamentos
+                </a>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <section class="admin-card admin-section"
+                     aria-labelledby="titulo-atividades">
+                <h2 id="titulo-atividades" class="admin-section-title">
+                    Últimas movimentações
+                </h2>
+
+                {% for movimento in movimentacoes %}
+                    <div class="admin-event">
+                        <div class="fw-semibold">
+                            {{ movimento.get_tipo_display }}
+                        </div>
+                        <div>
+                            {{ movimento.equipamento.patrimonio }}
+                            — {{ movimento.equipamento.nome }}
+                        </div>
+                        <div class="admin-muted mt-1">
+                            {{ movimento.data|date:"d/m/Y H:i" }}
+                            {% if movimento.usuario %}
+                                · {{ movimento.usuario.get_full_name|default:movimento.usuario.username }}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="admin-muted mb-0">
+                        Nenhuma movimentação registrada.
+                    </p>
+                {% endfor %}
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <section class="admin-card admin-section"
+                     aria-labelledby="titulo-pendencias">
+                <h2 id="titulo-pendencias" class="admin-section-title">
+                    Pendências de manutenção
+                </h2>
+
+                <div class="admin-summary">
+                    <span>Manutenções não concluídas</span>
+                    <strong>{{ manutencoes_abertas }}</strong>
+                </div>
+
+                <div class="admin-summary">
+                    <span>Defeitos abertos ou em análise</span>
+                    <strong>{{ defeitos_abertos }}</strong>
+                </div>
+
+                <p class="admin-muted mt-3 mb-0">
+                    Os números representam registros de manutenção e de defeito.
+                    Um equipamento pode ter mais de um registro.
+                </p>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row mb-4">
+
+<div class="col-md-3">
+
+<div class="card card-dashboard">
+
+<div class="card-body">
+
+<h6>Abertos</h6>
+
+<h2>{{ abertos }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card card-dashboard">
+
+<div class="card-body">
+
+<h6>Em andamento</h6>
+
+<h2>{{ andamento }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card card-dashboard">
+
+<div class="card-body">
+
+<h6>Resolvidos</h6>
+
+<h2>{{ resolvidos }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="card card-dashboard">
+
+<div class="card-body">
+
+<h6>Total</h6>
+
+<h2>{{ chamados|length }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<table class="table table-hover">
+
+<thead class="table-dark">
+
+<tr>
+
+<th>Ticket</th>
+
+<th>Título</th>
+
+<th>Prioridade</th>
+
+<th>Status</th>
+
+<th>Usuário</th>
+
+<th>Ações</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for chamado in chamados %}
+
+<tr>
+
+<td>{{ chamado.ticket }}</td>
+
+<td>{{ chamado.titulo }}</td>
+
+<td>{{ chamado.prioridade }}</td>
+
+<td>
+
+{% if chamado.status == "aberto" %}
+
+<span class="badge bg-danger">
+
+Aberto
+
+</span>
+
+{% elif chamado.status == "em_andamento" %}
+
+<span class="badge bg-warning text-dark">
+
+Em andamento
+
+</span>
+
+{% else %}
+
+<span class="badge bg-success">
+
+Resolvido
+
+</span>
+
+{% endif %}
+
+</td>
+
+contexto["chamados"] = (
+    Chamado.objects.select_related(
+        "criado_por",
+        "atribuido_a"
+    ).order_by("-data_criacao")[:10]
+)
+<td>
+
+<form method="post"
+action="{% url 'finalizar_chamado' chamado.id %}">
+
+{% csrf_token %}
+
+<button class="btn btn-success btn-sm">
+
+Finalizar
+
+</button>
+
+</form>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+{% endblock %}
