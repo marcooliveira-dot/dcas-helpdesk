@@ -104,6 +104,7 @@ def painel_admin(request):
         chamados = chamados.filter(status=status)
     else:
         status = ""
+        chamados = chamados.exclude(status__in=["resolvido", "fechado"])
 
     if prioridade in dict(Chamado.PRIORIDADE):
         chamados = chamados.filter(prioridade=prioridade)
@@ -203,6 +204,7 @@ def painel_tecnico(request):
         Chamado.objects
         .select_related("criado_por", "atribuido_a")
         .order_by("-data_criacao")
+        .exclude(status__in=["resolvido", "fechado"])
     )
 
     contexto = {
@@ -229,11 +231,13 @@ def painel_colaborador(request):
     if status not in dict(Chamado.STATUS):
         status = ''
     busca = request.GET.get('busca', '').strip()
-    grupos = [('', 'Todos', 'primary', sum(totais.values()))]
+    grupos = [('', 'Ativos', 'primary', sum(total for valor, total in totais.items() if valor not in ['resolvido', 'fechado']))]
     for valor, rotulo, cor in [('aberto','Em aberto','danger'),('em_andamento','Em andamento','warning'),('aguardando','Aguardando sua resposta','info'),('resolvido','Resolvidos','success'),('fechado','Fechados','secondary')]:
         grupos.append((valor, rotulo, cor, totais.get(valor,0)))
     if status:
         chamados = chamados.filter(status=status)
+    else:
+        chamados = chamados.exclude(status__in=['resolvido', 'fechado'])
     if busca:
         chamados = chamados.filter(Q(ticket__icontains=busca) | Q(titulo__icontains=busca))
     return render(request, 'chamados/dashboard/dashboard_colaborador.html', {**paginar(request,chamados), 'grupos':grupos, 'status':status, 'busca':busca, 'status_opcoes':Chamado.STATUS})

@@ -513,6 +513,26 @@
         })();
     </script>
 
+    <style>
+        tr[data-chamado-url] { cursor: pointer; }
+        tr[data-chamado-url]:focus-visible { outline: 2px solid #0d6efd; outline-offset: -2px; }
+    </style>
+    <script>
+        document.addEventListener('click', (event) => {
+            const row = event.target.closest('tr[data-chamado-url]');
+            if (!row || event.defaultPrevented || event.button !== 0 ||
+                event.ctrlKey || event.metaKey || event.shiftKey || event.altKey ||
+                event.target.closest('a, button, input, select, textarea, label, form') ||
+                window.getSelection().toString()) return;
+            window.location.assign(row.dataset.chamadoUrl);
+        });
+        document.addEventListener('keydown', (event) => {
+            if (!event.target.matches('tr[data-chamado-url]') ||
+                !['Enter', ' '].includes(event.key)) return;
+            event.preventDefault();
+            window.location.assign(event.target.dataset.chamadoUrl);
+        });
+    </script>
     {% block js %}{% endblock %}
 <form id="aviso-csrf" hidden>{% csrf_token %}</form><script>(function(){ const badge=document.getElementById('aviso-contador'); async function contar(){ if(document.hidden)return; try{ const r=await fetch("{% url 'notificacoes_contador' %}",{credentials:'same-origin'}); if(r.ok){const d=await r.json(); badge.textContent=d.total;} }catch(e){} } {% if avisos_chamado_id %}const token=document.querySelector('#aviso-csrf input').value; fetch("{% url 'notificacoes_ler' %}",{method:'POST',credentials:'same-origin',headers:{'X-CSRFToken':token,'Content-Type':'application/x-www-form-urlencoded'},body:'chamado={{ avisos_chamado_id }}&limite={{ avisos_limite }}'}).then(contar).catch(()=>{});{% endif %} setInterval(contar,30000); document.addEventListener('visibilitychange',contar); })();</script></body>
 </html>

@@ -43,6 +43,7 @@ def lista_chamados(request):
         qs = qs.filter(status=status)
     else:
         status = ''
+        qs = qs.exclude(status__in=['resolvido', 'fechado'])
     return render(request, 'chamados/revisao/chamados.html', {**paginar(request, qs), 'busca': busca, 'status': status, 'status_opcoes': Chamado.STATUS})
 
 
@@ -82,6 +83,8 @@ def detalhe_chamado(request, pk):
             if atendimento.is_valid():
                 atendimento.save()
                 messages.success(request, 'Atendimento atualizado.')
+                if chamado.status in ['resolvido', 'fechado']:
+                    return redirect('dashboard')
                 return redirect('detalhe_chamado', pk=pk)
         elif acao == 'resposta':
             resposta = RespostaForm(request.POST, request.FILES)
@@ -155,6 +158,7 @@ def relatorios(request):
 
 @login_required
 def arquivo_chamado(request, pk, resposta_pk=None):
+    import mimetypes
     from django.http import FileResponse, Http404
     qs = Chamado.objects.all()
     if not gestor(request.user):
@@ -163,8 +167,19 @@ def arquivo_chamado(request, pk, resposta_pk=None):
     campo = get_object_or_404(chamado.respostas, pk=resposta_pk).anexo if resposta_pk else chamado.anexo
     if not campo:
         raise Http404('Anexo não encontrado.')
+    filename = campo.name.rsplit('/', 1)[-1]
+    content_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+    visualizar = content_type in {
+        'application/pdf', 'image/jpeg', 'image/png', 'image/gif',
+        'image/webp', 'image/bmp', 'text/plain',
+    }
     try:
-        return FileResponse(campo.open('rb'), as_attachment=True, filename=campo.name.rsplit('/', 1)[-1])
+        response = FileResponse(
+            campo.open('rb'), as_attachment=not visualizar, filename=filename,
+            content_type=content_type if visualizar else 'application/octet-stream',
+        )
+        response['X-Content-Type-Options'] = 'nosniff'
+        return response
     except FileNotFoundError:
         raise Http404('Arquivo não encontrado no armazenamento.')
 
