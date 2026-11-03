@@ -17,270 +17,8 @@
     >
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
-    <style>
-        body.dcas-app {
-            margin: 0;
-            background: #edf2f7;
-            color: #263244;
-            font-family: Arial, sans-serif;
-        }
-
-        .dcas-app * {
-            box-sizing: border-box;
-        }
-
-        .dcas-skip {
-            position: fixed;
-            top: -100px;
-            left: 16px;
-            z-index: 1100;
-            padding: 12px 18px;
-            background: white;
-            color: #174b95;
-            border-radius: 8px;
-        }
-
-        .dcas-skip:focus {
-            top: 12px;
-        }
-
-        .dcas-sidebar {
-            position: fixed;
-            inset: 0 auto 0 0;
-            z-index: 1050;
-            display: flex;
-            flex-direction: column;
-            width: 248px;
-            height: 100vh;
-            height: 100dvh;
-            overflow-y: auto;
-            background: #111c2e;
-            color: #fff;
-        }
-
-        .dcas-brand {
-            padding: 32px 20px;
-            text-align: center;
-        }
-
-        .dcas-brand > i {
-            display: block;
-            margin-bottom: 12px;
-            color: #5593ff;
-            font-size: 46px;
-        }
-
-        .dcas-brand strong {
-            display: block;
-            font-size: 28px;
-            letter-spacing: 1px;
-        }
-
-        .dcas-brand span {
-            color: #b0bfd3;
-            font-size: 14px;
-        }
-
-        .dcas-nav {
-            padding: 12px;
-        }
-
-        .dcas-nav ul {
-            display: grid;
-            gap: 6px;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .dcas-nav a,
-        .dcas-unavailable {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-height: 48px;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .dcas-nav a {
-            color: #e8eef8;
-            text-decoration: none;
-        }
-
-        .dcas-nav a:hover {
-            background: #20324c;
-            color: white;
-        }
-
-        .dcas-nav a[aria-current="page"] {
-            background: #245ac0;
-            color: white;
-        }
-
-        .dcas-nav i,
-        .dcas-unavailable > i {
-            flex-shrink: 0;
-            font-size: 19px;
-        }
-
-        .dcas-unavailable {
-            color: #aab8cb;
-        }
-
-        .dcas-unavailable small {
-            margin-left: auto;
-            font-size: 10px;
-            white-space: nowrap;
-        }
-
-        .dcas-sidebar-footer {
-            margin-top: auto;
-            padding: 20px 24px;
-            border-top: 1px solid #2a374c;
-        }
-
-        .dcas-logout {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-            padding: 8px 0;
-            border: 0;
-            background: transparent;
-            color: #fff;
-            font: inherit;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        .dcas-main {
-            min-width: 0;
-            min-height: 100vh;
-            margin-left: 248px;
-        }
-
-        .dcas-topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            min-height: 86px;
-            padding: 20px 30px;
-            background: #fff;
-            border-bottom: 1px solid #dce3ed;
-        }
-
-        .dcas-heading {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            min-width: 0;
-        }
-
-        .dcas-heading h1 {
-            margin: 0;
-            font-size: clamp(20px, 3vw, 28px);
-            font-weight: 700;
-            overflow-wrap: anywhere;
-        }
-
-        .dcas-user {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            overflow-wrap: anywhere;
-        }
-
-        .dcas-user i {
-            color: #245ac0;
-            font-size: 28px;
-        }
-
-        .dcas-content {
-            padding: 30px;
-        }
-
-        .dcas-menu-toggle,
-        .dcas-menu-close {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            width: 42px;
-            height: 42px;
-            flex-shrink: 0;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            background: white;
-            color: #263244;
-            font-size: 22px;
-            cursor: pointer;
-        }
-
-        .dcas-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 1040;
-            background: rgb(15 23 42 / 55%);
-        }
-
-        .dcas-app :focus-visible {
-            outline: 3px solid #5593ff;
-            outline-offset: 3px;
-        }
-
-        @media (max-width: 991px) {
-            .dcas-sidebar {
-                visibility: hidden;
-                transform: translateX(-100%);
-            }
-
-            .dcas-app.dcas-menu-open {
-                overflow: hidden;
-            }
-
-            .dcas-menu-open .dcas-sidebar {
-                visibility: visible;
-                transform: translateX(0);
-            }
-
-            .dcas-main {
-                margin-left: 0;
-            }
-
-            .dcas-menu-toggle,
-            .dcas-menu-close {
-                display: inline-flex;
-            }
-
-            .dcas-menu-close {
-                align-self: flex-end;
-                margin: 12px 12px 0;
-            }
-
-            .dcas-topbar {
-                padding: 16px;
-            }
-
-            .dcas-content {
-                padding: 20px 16px;
-            }
-        }
-
-        @media (max-width: 575px) {
-            .dcas-topbar {
-                flex-wrap: wrap;
-            }
-
-            .dcas-user {
-                margin-left: auto;
-            }
-        }
-    </style>
-
     {% block css %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/modern.css' %}?v=20261103">
 </head>
 
 <body class="dcas-app">
@@ -306,14 +44,14 @@
         </button>
 
         <div class="dcas-brand">
-            <i class="bi bi-pc-display-horizontal" aria-hidden="true"></i>
-            <strong>DCAS</strong>
-            <span>HelpDesk</span>
+            <span class="dcas-brand-mark" aria-hidden="true">D</span>
+            <div><strong>DCAS</strong><small>HelpDesk</small></div>
         </div>
 
         <nav class="dcas-nav" aria-label="Navegação principal">
+            <p class="dcas-nav-caption">CENTRAL DE SUPORTE</p>
             {% with pagina=request.resolver_match.url_name %}
-                <ul><li><a href="{% url 'novo_chamado' %}"><i class="bi bi-plus-circle" aria-hidden="true"></i><span>Abrir chamado</span></a></li>
+                <ul><li class="dcas-nav-create"><a href="{% url 'novo_chamado' %}" {% if pagina == 'novo_chamado' %}aria-current="page"{% endif %}><i class="bi bi-plus-circle" aria-hidden="true"></i><span>Abrir chamado</span></a></li>
                     <li>
                         <a
                             href="{% url 'dashboard' %}"
@@ -338,33 +76,34 @@
                         </a>
                     </li>{% endif %}
 
-                    {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' or request.user.perfil.tipo == 'tecnico' %}<li><a href="{% url 'movimentacoes' %}">
+                    {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' or request.user.perfil.tipo == 'tecnico' %}<li><a href="{% url 'movimentacoes' %}" {% if pagina == 'movimentacoes' %}aria-current="page"{% endif %}>
                             <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
                             <span>Movimentações</span></a></li>{% endif %}
 
-                    {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' or request.user.perfil.tipo == 'tecnico' %}<li><a href="{% url 'manutencoes' %}">
+                    {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' or request.user.perfil.tipo == 'tecnico' %}<li><a href="{% url 'manutencoes' %}" {% if pagina == 'manutencoes' %}aria-current="page"{% endif %}>
                             <i class="bi bi-tools" aria-hidden="true"></i>
                             <span>Manutenções</span></a></li>{% endif %}
 
-                    {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' or request.user.perfil.tipo == 'tecnico' %}<li><a href="{% url 'defeitos' %}">
+                    {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' or request.user.perfil.tipo == 'tecnico' %}<li><a href="{% url 'defeitos' %}" {% if pagina == 'defeitos' %}aria-current="page"{% endif %}>
                             <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
                             <span>Defeitos</span></a></li>{% endif %}
 
                     <li>
-                        <a href="{% url 'lista_chamados' %}">
+                        <a href="{% url 'lista_chamados' %}" {% if pagina == 'lista_chamados' or pagina == 'detalhe_chamado' %}aria-current="page"{% endif %}>
                             <i class="bi bi-ticket-detailed" aria-hidden="true"></i>
                             <span>Chamados</span>
                         </a>
                     </li>
 
-                    {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' or request.user.perfil.tipo == 'tecnico' %}<li><a href="{% url 'relatorios' %}">
+                    {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' or request.user.perfil.tipo == 'tecnico' %}<li><a href="{% url 'relatorios' %}" {% if pagina == 'relatorios' %}aria-current="page"{% endif %}>
                             <i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i>
                             <span>Relatórios</span></a></li>{% endif %}
-                {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' %}<li><a href="{% url 'usuarios' %}"><i class="bi bi-people" aria-hidden="true"></i><span>Usuários e acessos</span></a></li>{% endif %}</ul>
+                {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' %}<li><a href="{% url 'usuarios' %}" {% if pagina == 'usuarios' %}aria-current="page"{% endif %}><i class="bi bi-people" aria-hidden="true"></i><span>Usuários e acessos</span></a></li>{% endif %}</ul>
             {% endwith %}
         </nav>
 
         <div class="dcas-sidebar-footer">
+            <div class="dcas-sidebar-note"><strong>DCAS Group</strong>Central de tecnologia</div>
             <form method="post" action="{% url 'sair' %}">
                 {% csrf_token %}
                 <button class="dcas-logout" type="submit">
@@ -389,14 +128,19 @@
                     <i class="bi bi-list" aria-hidden="true"></i>
                 </button>
 
-                <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                <div>
+                    <span class="dcas-breadcrumb">DCAS / Workspace</span>
+                    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
             </div>
 
-            <div class="dcas-user"><a class="btn btn-outline-primary" href="{% url 'notificacoes' %}" aria-label="Notificações"><i class="bi bi-bell" aria-hidden="true"></i> <span id="aviso-contador" class="badge bg-danger" aria-live="polite">{{ avisos_nao_lidos|default:0 }}</span></a>
-                <i class="bi bi-person-circle" aria-hidden="true"></i>
-                <span>
+            <div class="dcas-user">
+                <a class="dcas-notifications" href="{% url 'notificacoes' %}" aria-label="Notificações"><i class="bi bi-bell" aria-hidden="true"></i><span id="aviso-contador" class="badge bg-danger" aria-live="polite">{{ avisos_nao_lidos|default:0 }}</span></a>
+                <span class="dcas-avatar" aria-hidden="true">{{ request.user.username|slice:':1'|upper }}</span>
+                <div class="dcas-user-name">
                     {{ request.user.get_full_name|default:request.user.username }}
-                </span>
+                    <small>{% if request.user.is_superuser or request.user.perfil.tipo == 'admin' %}Administrador{% elif request.user.perfil.tipo == 'tecnico' %}Equipe de suporte{% else %}Colaborador{% endif %}</small>
+                </div>
             </div>
         </header>
 

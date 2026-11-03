@@ -3,161 +3,66 @@
 {% block title %}Administração | DCAS HelpDesk{% endblock %}
 {% block page_title %}Painel administrativo{% endblock %}
 
-{% block css %}
-<style>
-    .admin-panel {
-        --admin-border: #dce3ed;
-    }
-
-    .admin-panel .admin-card {
-        background: white;
-        border: 1px solid var(--admin-border);
-        border-radius: 14px;
-        height: 100%;
-    }
-
-    .admin-panel .admin-stat {
-        padding: 20px;
-    }
-
-    .admin-panel .admin-stat-label {
-        color: #526176;
-        font-size: 14px;
-        margin-bottom: 8px;
-    }
-
-    .admin-panel .admin-stat-value {
-        font-size: 30px;
-        font-weight: 700;
-        line-height: 1.2;
-    }
-
-    .admin-panel .admin-section {
-        padding: 24px;
-    }
-
-    .admin-panel .admin-section-title {
-        font-size: 18px;
-        font-weight: 700;
-        margin: 0 0 8px;
-    }
-
-    .admin-panel .admin-muted {
-        color: #526176;
-        font-size: 14px;
-    }
-
-    .admin-panel .admin-summary {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 12px 0;
-        border-bottom: 1px solid #edf0f5;
-    }
-
-    .admin-panel .admin-summary:last-child {
-        border-bottom: 0;
-    }
-
-    .admin-panel .table th {
-        color: #526176;
-        font-size: 13px;
-        white-space: nowrap;
-    }
-
-    .admin-panel .table td {
-        font-size: 14px;
-        padding-top: 16px;
-        padding-bottom: 16px;
-    }
-
-    .admin-panel .admin-ticket-title {
-        min-width: 180px;
-        max-width: 340px;
-        overflow-wrap: anywhere;
-    }
-
-    .admin-panel .admin-event {
-        padding: 14px 0;
-        border-bottom: 1px solid #edf0f5;
-    }
-
-    .admin-panel .admin-event:last-child {
-        border-bottom: 0;
-    }
-
-    .admin-panel .admin-attention {
-        background: #fff8e8;
-        border: 1px solid #ecd39a;
-        border-radius: 10px;
-        padding: 16px;
-    }
-
-    @media (max-width: 575px) {
-        .admin-panel .admin-section {
-            padding: 16px;
-        }
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="admin-panel">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div class="dcas-dashboard-intro">
         <div>
-            <h2 class="h5 mb-1">Visão geral do suporte</h2>
-            <p class="admin-muted mb-0">
-                Acompanhe solicitações, equipamentos e atividades.
-                Indicadores gerais; os filtros afetam apenas a lista de chamados.
-            </p>
+            <span class="dcas-eyebrow">Visão geral do suporte</span>
+            <h2>Olá, {{ request.user.first_name|default:request.user.username }}.</h2>
+            <p>Acompanhe os atendimentos e mantenha sua operação em dia.</p>
         </div>
-
-        <a href="{% url 'equipamentos' %}" class="btn btn-primary">
-            <i class="bi bi-laptop me-1" aria-hidden="true"></i>
-            Gerenciar equipamentos
-        </a>
+        <div class="dcas-dashboard-actions">
+            <a href="{% url 'equipamentos' %}" class="btn btn-outline-secondary"><i class="bi bi-laptop" aria-hidden="true"></i>Equipamentos</a>
+            <a href="{% url 'novo_chamado' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i>Novo chamado</a>
+        </div>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-2">
-            <div class="admin-card admin-stat">
-                <div class="admin-stat-label">Total de chamados</div>
+            <div class="admin-card admin-stat admin-stat-total">
+                <div class="admin-stat-label"><span>Total de chamados</span><i class="bi bi-ticket-detailed" aria-hidden="true"></i></div>
                 <div class="admin-stat-value">{{ total_chamados }}</div>
+                <span class="admin-stat-caption">Visão completa do suporte</span>
             </div>
         </div>
 
         <div class="col-6 col-xl-2">
-            <div class="admin-card admin-stat">
-                <div class="admin-stat-label">Abertos</div>
+            <div class="admin-card admin-stat admin-stat-open">
+                <div class="admin-stat-label"><span>Abertos</span><i class="bi bi-inbox" aria-hidden="true"></i></div>
                 <div class="admin-stat-value text-danger">{{ abertos }}</div>
+                <span class="admin-stat-caption">Aguardando atendimento</span>
             </div>
         </div>
 
         <div class="col-6 col-xl-2">
-            <div class="admin-card admin-stat">
-                <div class="admin-stat-label">Em andamento</div>
+            <div class="admin-card admin-stat admin-stat-progress">
+                <div class="admin-stat-label"><span>Em andamento</span><i class="bi bi-arrow-repeat" aria-hidden="true"></i></div>
                 <div class="admin-stat-value text-primary">{{ andamento }}</div>
+                <span class="admin-stat-caption">Em atendimento pela equipe</span>
             </div>
         </div>
 
         <div class="col-6 col-xl-2">
-            <div class="admin-card admin-stat">
-                <div class="admin-stat-label">Aguardando cliente</div>
+            <div class="admin-card admin-stat admin-stat-waiting">
+                <div class="admin-stat-label"><span>Aguardando cliente</span><i class="bi bi-hourglass-split" aria-hidden="true"></i></div>
                 <div class="admin-stat-value">{{ aguardando }}</div>
+                <span class="admin-stat-caption">Aguardando uma resposta</span>
             </div>
         </div>
 
         <div class="col-6 col-xl-2">
-            <div class="admin-card admin-stat">
-                <div class="admin-stat-label">Resolvidos</div>
+            <div class="admin-card admin-stat admin-stat-resolved">
+                <div class="admin-stat-label"><span>Resolvidos</span><i class="bi bi-check2-circle" aria-hidden="true"></i></div>
                 <div class="admin-stat-value text-success">{{ resolvidos }}</div>
+                <span class="admin-stat-caption">Atendimentos concluídos</span>
             </div>
         </div>
 
         <div class="col-6 col-xl-2">
-            <div class="admin-card admin-stat">
-                <div class="admin-stat-label">Fechados</div>
+            <div class="admin-card admin-stat admin-stat-closed">
+                <div class="admin-stat-label"><span>Fechados</span><i class="bi bi-archive" aria-hidden="true"></i></div>
                 <div class="admin-stat-value text-secondary">{{ fechados }}</div>
+                <span class="admin-stat-caption">Disponíveis no histórico</span>
             </div>
         </div>
     </div>
@@ -173,12 +78,11 @@
 
     <section id="chamados" class="admin-card admin-section mb-4"
              aria-labelledby="titulo-chamados">
-        <h2 id="titulo-chamados" class="admin-section-title">
-            Gerenciamento de chamados
-        </h2>
-        <p class="admin-muted">
-            Pesquise pelo protocolo, título ou solicitante.
-        </p>
+        <div class="dcas-section-heading">
+            <div><h2 id="titulo-chamados" class="admin-section-title">Fila de atendimento</h2>
+            <p class="admin-muted mb-0">Encontre um chamado e acompanhe a conversa com sua equipe.</p></div>
+            <span class="dcas-section-icon"><i class="bi bi-layout-text-window-reverse" aria-hidden="true"></i></span>
+        </div>
 
         <form method="get" action="{% url 'painel_admin' %}#chamados"
               class="row g-3 mb-4">
@@ -242,7 +146,7 @@
             </div>
         </form>
 
-        <p class="admin-muted">
+        <p class="dcas-result-count"><i class="bi bi-filter" aria-hidden="true"></i>
             {{ pagina.paginator.count }} chamado{{ pagina.paginator.count|pluralize:"s" }}
             encontrado{{ pagina.paginator.count|pluralize:"s" }}.
         </p>
@@ -330,8 +234,10 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-secondary">
-                                Nenhum chamado encontrado para esta pesquisa.
+                            <td colspan="8" class="dcas-empty">
+                                <i class="bi bi-inbox" aria-hidden="true"></i>
+                                <strong>Nenhum chamado por aqui</strong>
+                                <span>Os novos atendimentos aparecerão nesta lista. Você também pode ajustar os filtros.</span>
                             </td>
                         </tr>
                     {% endfor %}
