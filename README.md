@@ -24,3 +24,11 @@ As regras de acesso, abertura de anexos e filtros de chamados ativos permanecem 
 3. Reinicie o serviço da aplicação usando o procedimento já adotado no servidor.
 
 Se o visual antigo ainda aparecer, recarregue a página sem usar o cache. O CSS novo usa a versão `20261103` na URL.
+
+## Cadastro de equipamentos em etapas — 05/11/2026
+
+O cadastro reúne dados da pessoa, do equipamento, fotos e termo de responsabilidade. Vincular um usuário ativo registra a entrega; deixar o vínculo vazio mantém o equipamento em estoque. O termo é opcional e o CPF informado é usado somente para gerar o PDF, sem ser gravado no cadastro.
+
+A galeria mantém a foto anterior e aceita novos envios de até 10 imagens JPEG, PNG ou WebP (8 MB por imagem e 32 MB somados). As fotos novas ficam em `private_uploads/` por padrão, fora de `MEDIA_ROOT`, e são servidas pelas rotas autenticadas do Django.
+
+Para atualizar o servidor, faça backup do banco, aplique `python manage.py migrate` e reinicie a aplicação. Garanta acesso de escrita ao diretório privado pelo processo Django, inclua-o no backup e não o exponha no nginx. Se necessário, ajuste o limite do corpo da requisição no proxy para permitir os uploads previstos.

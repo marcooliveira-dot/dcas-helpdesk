@@ -7,10 +7,15 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST, require_http_methods
 from django.http import HttpResponseForbidden
 
-from .forms import ChamadoForm, EquipamentoForm
+from .cadastro_equipamento import (
+    CadastroEquipamentoForm, FotosEquipamentoForm, ResponsavelEquipamentoForm,
+    gravar_equipamento_com_fotos,
+)
+from .forms import ChamadoForm
 from .models import (
     Categoria,
     Chamado,
@@ -304,30 +309,83 @@ def controle_equipamentos(request):
 
 @login_required
 @perfis_permitidos("tecnico", "admin")
+@never_cache
+@require_http_methods(["GET", "POST"])
 def novo_equipamento(request):
-    if request.method == "POST":
-        form = EquipamentoForm(request.POST, request.FILES)
+    from .termos import TermoForm, preparar_termo, resposta_termo
 
-        if form.is_valid():
-            with transaction.atomic():
-                equipamento = form.save()
+    enviado = request.method == "POST"
+    dados = request.POST if enviado else None
+    arquivos = request.FILES if enviado else None
+    gerar_termo = enviado and request.POST.get("acao") == "termo"
+    pessoa = ResponsavelEquipamentoForm(dados)
+    form = CadastroEquipamentoForm(dados, arquivos, initial={"tipo": "notebook"})
+    galeria = FotosEquipamentoForm(dados, arquivos)
+    etapa = 1
 
-                Movimentacao.objects.create(
-                    equipamento=equipamento,
-                    usuario=request.user,
-                    tipo="entrada",
-                    observacao="Equipamento cadastrado no patrimônio.",
-                )
+    pessoa_valida = pessoa.is_valid() if enviado else False
+    colaborador = pessoa.cleaned_data.get("colaborador") if pessoa_valida else None
+    termo_dados = request.POST.copy() if gerar_termo else None
+    if gerar_termo and colaborador and not termo_dados.get("termo-nome", "").strip():
+        termo_dados["termo-nome"] = colaborador.get_full_name() or colaborador.username
+    termo = TermoForm(termo_dados, prefix="termo", use_required_attribute=False)
+    campos_computador = [campo for campo in form if campo.name != "foto"]
 
-            messages.success(request, "Equipamento cadastrado com sucesso.")
-            return redirect("detalhe_equipamento", pk=equipamento.pk)
-    else:
-        form = EquipamentoForm()
+    if enviado:
+        equipamento_valido = form.is_valid()
+        fotos_validas = galeria.is_valid()
+        termo_valido = not gerar_termo or termo.is_valid()
+        if not pessoa_valida or (gerar_termo and ("nome" in termo.errors or "cpf" in termo.errors)):
+            etapa = 1
+        elif form.non_field_errors() or any(campo.errors for campo in campos_computador):
+            etapa = 2
+        elif form["foto"].errors or not fotos_validas:
+            etapa = 3
+        else:
+            etapa = 4
+
+        if pessoa_valida and equipamento_valido and fotos_validas and termo_valido:
+            equipamento = form.save(commit=False)
+            pdf = None
+            if gerar_termo:
+                try:
+                    pdf = preparar_termo(equipamento, termo.cleaned_data)
+                except ValueError as error:
+                    termo.add_error(None, str(error))
+                except OSError:
+                    termo.add_error(None, "Não foi possível abrir o modelo do termo. Tente novamente.")
+            if not gerar_termo or pdf is not None:
+                with gravar_equipamento_com_fotos() as gravadas:
+                    if colaborador:
+                        equipamento.colaborador = colaborador
+                        equipamento.status = "em_uso"
+                        equipamento.data_entrega = timezone.now()
+                    equipamento.save()
+                    if "foto" in request.FILES:
+                        gravadas.append(equipamento.foto)
+                    galeria.salvar(equipamento, gravadas)
+                    Movimentacao.objects.create(
+                        equipamento=equipamento, usuario=request.user, tipo="entrada",
+                        observacao="Equipamento cadastrado no patrimônio.",
+                    )
+                    if colaborador:
+                        Movimentacao.objects.create(
+                            equipamento=equipamento, usuario=request.user,
+                            colaborador=colaborador, tipo="saida",
+                            observacao="Equipamento entregue no cadastro.",
+                        )
+                messages.success(request, "Equipamento cadastrado com sucesso.")
+                if pdf is not None:
+                    return resposta_termo(equipamento, pdf, disposicao="inline")
+                return redirect("detalhe_equipamento", pk=equipamento.pk)
 
     return render(
         request,
         "chamados/equipamentos/novo.html",
-        {"form": form},
+        {
+            "form": form, "pessoa": pessoa, "galeria": galeria, "termo": termo,
+            "etapa": etapa, "campos_computador": campos_computador, "enviado": enviado,
+        },
     )
 
 

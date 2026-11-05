@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Fotos do computador | DCAS HelpDesk{% endblock %}
+{% block page_title %}Fotos do computador{% endblock %}
+{% block content %}
+<section class="card p-4 mb-4">
+    <h2 class="h5">{{ equipamento.patrimonio }} — {{ equipamento.nome }}</h2>
+    <p class="text-secondary">As novas fotos serão adicionadas à galeria. As fotos existentes serão mantidas.</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% include 'chamados/equipamentos/campo.html' with campo=form.fotos %}
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <button type="submit" class="btn btn-primary">Adicionar fotos</button>
+            <a class="btn btn-outline-secondary" href="{% url 'detalhe_equipamento' equipamento.pk %}">Voltar ao equipamento</a>
+        </div>
+    </form>
+</section>
+<section class="card p-4">
+    <h2 class="h5 mb-3">Galeria de fotos</h2>
+    {% include 'chamados/equipamentos/galeria.html' %}
+</section>
+{% endblock %}

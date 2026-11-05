@@ -171,6 +171,7 @@ urlpatterns += [
  path('usuarios/<int:pk>/foto/',fichas.foto_perfil,name='usuario_foto'),
  path('usuarios/<int:pk>/vincular/',fichas.vincular,name='usuario_vincular'),
  path('equipamentos/<int:pk>/imagem/',fichas.foto_pc,name='imagem_pc'),
+ path('equipamentos/<int:pk>/imagens/<int:foto_pk>/', fichas.foto_pc_adicional, name='imagem_pc_adicional'),
  path('equipamentos/<int:pk>/imagem/editar/',fichas.imagem_editar,name='imagem_pc_editar'),
  path('equipamentos/<int:pk>/transferir/',fichas.transferir,name='transferir_equipamento'),
 ]

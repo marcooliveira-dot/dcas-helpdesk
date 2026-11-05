@@ -1,4 +1,154 @@
 {% extends 'base.html' %}
 {% block title %}Novo equipamento | DCAS HelpDesk{% endblock %}
 {% block page_title %}Novo equipamento{% endblock %}
-{% block content %}<section class="card border-0 p-4"><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}<div class="text-danger">{{ field.errors }}</div></div>{% endfor %}<button class="btn btn-primary">Salvar equipamento</button><a class="btn btn-outline-secondary ms-2" href="{% url 'equipamentos' %}">Cancelar</a></form></section>{% endblock %}
+{% block content %}
+<div class="mx-auto" style="max-width:960px">
+    <p class="text-secondary">Cadastre o equipamento, adicione fotos e prepare o termo para assinatura.</p>
+    <ol class="row row-cols-2 row-cols-md-4 g-2 list-unstyled mb-4" aria-label="Etapas do cadastro">
+        <li class="col"><div class="card h-100 p-3" data-etapa-indicador><strong>01 · Pessoa</strong><small class="text-secondary">Responsável e dados do termo</small></div></li>
+        <li class="col"><div class="card h-100 p-3" data-etapa-indicador><strong>02 · Computador</strong><small class="text-secondary">Patrimônio e especificações</small></div></li>
+        <li class="col"><div class="card h-100 p-3" data-etapa-indicador><strong>03 · Fotos</strong><small class="text-secondary">Imagens e documento</small></div></li>
+        <li class="col"><div class="card h-100 p-3" data-etapa-indicador><strong>04 · Termo</strong><small class="text-secondary">Revisão e emissão do PDF</small></div></li>
+    </ol>
+    {% if enviado %}
+        <div class="alert alert-warning" role="alert">Confira os campos marcados. Se você já tinha selecionado arquivos, selecione-os novamente antes de concluir.</div>
+    {% endif %}
+    <form id="cadastro-equipamento" class="card p-4" method="post" enctype="multipart/form-data" data-etapa="{{ etapa }}">
+        {% csrf_token %}
+        <fieldset data-etapa-painel>
+            <h2 class="h5" tabindex="-1">Informações da pessoa</h2>
+            <p class="text-secondary">Ao selecionar um usuário, o equipamento fica vinculado a ele e a entrega é registrada. Para cadastrar em estoque, deixe sem vínculo.</p>
+            <div class="mb-3">{% include 'chamados/equipamentos/campo.html' with campo=pessoa.colaborador %}</div>
+            <p class="small text-secondary">Nome e CPF são usados somente para gerar o termo. Se vincular um usuário e deixar o nome em branco, o sistema usará o nome cadastrado.</p>
+            <div class="row g-3">
+                <div class="col-md-7">{% include 'chamados/equipamentos/campo.html' with campo=termo.nome sem_asterisco=True %}</div>
+                <div class="col-md-5">{% include 'chamados/equipamentos/campo.html' with campo=termo.cpf sem_asterisco=True %}</div>
+            </div>
+        </fieldset>
+        <fieldset class="mt-3" data-etapa-painel>
+            <h2 class="h5" tabindex="-1">Dados do computador</h2>
+            <p class="text-secondary">Informe o patrimônio, o tipo e as características do equipamento.</p>
+            {{ form.non_field_errors }}
+            <div class="row g-3">
+                {% for campo in campos_computador %}
+                    <div class="{% if campo.name == 'observacao' %}col-12{% else %}col-md-6{% endif %}">
+                        {% include 'chamados/equipamentos/campo.html' with campo=campo %}
+                    </div>
+                {% endfor %}
+            </div>
+        </fieldset>
+        <fieldset class="mt-3" data-etapa-painel>
+            <h2 class="h5" tabindex="-1">Fotos do computador</h2>
+            <p class="text-secondary">Você pode selecionar várias fotos de uma vez, como a frente, a parte traseira e a etiqueta do patrimônio.</p>
+            <div class="mb-3">
+                {% include 'chamados/equipamentos/campo.html' with campo=galeria.fotos %}
+                <div id="fotos-selecionadas" class="small text-secondary mt-2" aria-live="polite"></div>
+            </div>
+            {% include 'chamados/equipamentos/campo.html' with campo=form.foto %}
+        </fieldset>
+        <fieldset class="mt-3" data-etapa-painel>
+            <h2 class="h5" tabindex="-1">Termo de responsabilidade</h2>
+            <p class="text-secondary">Confira o cadastro. Para gerar o PDF, informe o CPF e o nome na primeira etapa ou selecione um usuário com nome cadastrado.</p>
+            <dl class="row rounded border p-3 mb-3 d-none" id="resumo-cadastro" hidden>
+                <dt class="col-sm-4">Pessoa</dt><dd class="col-sm-8" data-resumo="pessoa"></dd>
+                <dt class="col-sm-4">Equipamento</dt><dd class="col-sm-8" data-resumo="equipamento"></dd>
+                <dt class="col-sm-4">Fotos</dt><dd class="col-sm-8 mb-0" data-resumo="fotos"></dd>
+            </dl>
+            {{ termo.non_field_errors }}
+            <div class="row g-3">
+                <div class="col-md-6">{% include 'chamados/equipamentos/campo.html' with campo=termo.acessorios %}</div>
+                <div class="col-md-6">{% include 'chamados/equipamentos/campo.html' with campo=termo.conservacao %}</div>
+            </div>
+            <p class="small text-secondary mt-3 mb-0">O PDF fica pronto para impressão e assinatura. Gerar o termo não registra assinatura ou aceite.</p>
+        </fieldset>
+        <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+            <a class="btn btn-outline-secondary" href="{% url 'equipamentos' %}">Cancelar</a>
+            <button class="btn btn-outline-secondary d-none" id="etapa-anterior" type="button" hidden>Voltar etapa</button>
+            <button class="btn btn-primary ms-auto d-none" id="etapa-seguinte" type="button" hidden>Continuar <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+            <div class="d-flex flex-wrap gap-2 ms-auto" id="acoes-cadastro">
+                <button class="btn btn-outline-primary" type="submit" name="acao" value="salvar">Salvar sem termo</button>
+                <button class="btn btn-primary" type="submit" name="acao" value="termo"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Salvar e gerar termo</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+(() => {
+    const cadastro = document.getElementById('cadastro-equipamento');
+    const paineis = [...cadastro.querySelectorAll('[data-etapa-painel]')];
+    const indicadores = [...document.querySelectorAll('[data-etapa-indicador]')];
+    const anterior = document.getElementById('etapa-anterior');
+    const seguinte = document.getElementById('etapa-seguinte');
+    const acoes = document.getElementById('acoes-cadastro');
+    const fotos = cadastro.elements.namedItem('fotos');
+    const pessoa = cadastro.elements.namedItem('colaborador');
+    const nome = cadastro.elements.namedItem('termo-nome');
+    const cpf = cadastro.elements.namedItem('termo-cpf');
+    let etapa = Number(cadastro.dataset.etapa) - 1;
+
+    const quantidadeFotos = () => fotos.files.length + ' foto(s) selecionada(s)';
+
+    function mostrar(indice, focar = true) {
+        etapa = indice;
+        paineis.forEach((painel, posicao) => { painel.hidden = posicao !== etapa; });
+        indicadores.forEach((indicador, posicao) => {
+            indicador.classList.toggle('border-3', posicao === etapa);
+            if (posicao === etapa) indicador.setAttribute('aria-current', 'step');
+            else indicador.removeAttribute('aria-current');
+        });
+        anterior.hidden = etapa === 0;
+        seguinte.hidden = etapa === paineis.length - 1;
+        acoes.hidden = etapa !== paineis.length - 1;
+        [anterior, seguinte, acoes].forEach(botao => botao.classList.toggle('d-none', botao.hidden));
+
+        if (!acoes.hidden) {
+            const resumo = document.getElementById('resumo-cadastro');
+            resumo.hidden = false;
+            resumo.classList.remove('d-none');
+            resumo.querySelector('[data-resumo="pessoa"]').textContent =
+                pessoa.value ? pessoa.selectedOptions[0].textContent : nome.value.trim() || 'Estoque (sem vínculo)';
+            resumo.querySelector('[data-resumo="equipamento"]').textContent =
+                cadastro.elements.namedItem('patrimonio').value + ' — ' + cadastro.elements.namedItem('nome').value;
+            resumo.querySelector('[data-resumo="fotos"]').textContent = quantidadeFotos();
+        }
+        if (focar) paineis[etapa].querySelector('h2').focus();
+    }
+
+    function avancar() {
+        const invalido = [...paineis[etapa].querySelectorAll('input,select,textarea')]
+            .find(campo => !campo.validity.valid);
+        if (invalido) invalido.reportValidity();
+        else if (etapa < paineis.length - 1) mostrar(etapa + 1);
+    }
+
+    fotos.addEventListener('change', () => {
+        document.getElementById('fotos-selecionadas').textContent = quantidadeFotos();
+    });
+    anterior.addEventListener('click', () => mostrar(etapa - 1));
+    seguinte.addEventListener('click', avancar);
+    cadastro.addEventListener('invalid', event => {
+        const indice = paineis.indexOf(event.target.closest('[data-etapa-painel]'));
+        if (indice >= 0 && paineis[indice].hidden) mostrar(indice, false);
+    }, true);
+    cadastro.addEventListener('submit', event => {
+        if (etapa !== paineis.length - 1) {
+            event.preventDefault();
+            avancar();
+        } else if (event.submitter?.value === 'termo') {
+            const campo = !nome.value.trim() && !pessoa.value ? nome : !cpf.value.trim() ? cpf : null;
+            if (campo) {
+                event.preventDefault();
+                mostrar(0, false);
+                campo.setCustomValidity('Preencha este campo para gerar o termo.');
+                campo.reportValidity();
+                campo.setCustomValidity('');
+            }
+        }
+    });
+    mostrar(etapa, false);
+})();
+</script>
+{% endblock %}

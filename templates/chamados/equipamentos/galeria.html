@@ -1,0 +1,23 @@
+{% with fotos=equipamento.fotos_pc.all %}
+    {% if equipamento.imagem_pc or fotos %}
+        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3">
+            {% if equipamento.imagem_pc %}
+                <div class="col">
+                    <a href="{% url 'imagem_pc' equipamento.pk %}" target="_blank" rel="noopener noreferrer">
+                        <img src="{% url 'imagem_pc' equipamento.pk %}" alt="Foto original de {{ equipamento.nome }}" loading="lazy" class="w-100 rounded border bg-light" style="aspect-ratio:4/3;object-fit:contain">
+                    </a>
+                </div>
+            {% endif %}
+            {% for foto in fotos %}
+                {% url 'imagem_pc_adicional' equipamento.pk foto.pk as url_foto %}
+                <div class="col">
+                    <a href="{{ url_foto }}" target="_blank" rel="noopener noreferrer">
+                        <img src="{{ url_foto }}" alt="Foto adicional {{ forloop.counter }} de {{ equipamento.nome }}" loading="lazy" class="w-100 rounded border bg-light" style="aspect-ratio:4/3;object-fit:contain">
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-secondary mb-0">Nenhuma foto do computador cadastrada.</p>
+    {% endif %}
+{% endwith %}

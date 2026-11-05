@@ -1,4 +1,6 @@
 from django.db import models
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models.signals import post_save
@@ -564,6 +566,24 @@ class Equipamento(models.Model):
         # ==========================================================
 # MOVIMENTAÇÕES
 # ==========================================================
+
+def armazenamento_fotos_equipamento():
+    return FileSystemStorage(
+        location=getattr(settings, "EQUIPAMENTO_FOTOS_ROOT", settings.BASE_DIR / "private_uploads"),
+    )
+
+
+class FotoEquipamento(models.Model):
+    equipamento = models.ForeignKey(
+        Equipamento, on_delete=models.CASCADE, related_name="fotos_pc",
+    )
+    imagem = models.ImageField(
+        upload_to="equipamentos/", storage=armazenamento_fotos_equipamento,
+    )
+
+    class Meta:
+        ordering = ["pk"]
+
 
 class Movimentacao(models.Model):
 

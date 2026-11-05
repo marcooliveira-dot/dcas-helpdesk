@@ -37,6 +37,30 @@ class TermoForm(forms.Form):
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
 
+def preparar_termo(equipamento, dados):
+    partes = [str(equipamento.nome)]
+    for rotulo, valor in (
+        ('Marca', equipamento.marca), ('Modelo', equipamento.modelo),
+        ('Série', equipamento.numero_serie), ('Acessórios', dados['acessorios']),
+        ('Conservação', dados['conservacao']),
+    ):
+        if valor:
+            partes.append(f'{rotulo}: {valor}')
+    return gerar_pdf(
+        Path(settings.BASE_DIR) / 'chamados/documentos/termo_modelo.pdf',
+        dados['nome'], str(equipamento.patrimonio), ' | '.join(partes),
+        cpf=dados['cpf'],
+        data=timezone.now().astimezone(ZoneInfo('America/Sao_Paulo')).strftime('%d/%m/%Y'),
+    )
+
+
+def resposta_termo(equipamento, data, disposicao='attachment'):
+    response = HttpResponse(data, content_type='application/pdf')
+    response['Content-Disposition'] = f'{disposicao}; filename="termo-equipamento-{equipamento.pk}.pdf"'
+    response['Cache-Control'] = 'private, no-store'
+    return response
+
+
 @login_required
 @perfis_permitidos('admin','tecnico')
 @require_http_methods(['GET','POST'])
@@ -45,16 +69,10 @@ def termo_equipamento(request, pk):
     nome= equipamento.colaborador.get_full_name() if equipamento.colaborador else ''
     form=TermoForm(request.POST if request.method=='POST' else None,initial={'nome':nome})
     if request.method=='POST' and form.is_valid():
-        partes=[str(equipamento.nome)]
-        for label,valor in [('Marca',equipamento.marca),('Modelo',equipamento.modelo),('Série',equipamento.numero_serie),('Acessórios',form.cleaned_data['acessorios']),('Conservação',form.cleaned_data['conservacao'])]:
-            if valor: partes.append(f'{label}: {valor}')
         try:
-            data=gerar_pdf(Path(settings.BASE_DIR)/'chamados/documentos/termo_modelo.pdf',form.cleaned_data['nome'],str(equipamento.patrimonio),' | '.join(partes),cpf=form.cleaned_data['cpf'],data=timezone.now().astimezone(ZoneInfo('America/Sao_Paulo')).strftime('%d/%m/%Y'))
+            data = preparar_termo(equipamento, form.cleaned_data)
         except ValueError as error:
             form.add_error(None,str(error))
         else:
-            response=HttpResponse(data,content_type='application/pdf')
-            response['Content-Disposition']=f'attachment; filename="termo-equipamento-{equipamento.pk}.pdf"'
-            response['Cache-Control']='private, no-store'
-            return response
+            return resposta_termo(equipamento, data)
     return render(request,'chamados/equipamentos/termo.html',{'equipamento':equipamento,'form':form})

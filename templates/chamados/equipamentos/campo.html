@@ -1,0 +1,6 @@
+<div>
+    <label class="form-label" for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required and not sem_asterisco %} *{% endif %}</label>
+    {{ campo }}
+    {% if campo.help_text %}<div id="{{ campo.auto_id }}_helptext" class="form-text">{{ campo.help_text }}</div>{% endif %}
+    <div class="text-danger">{{ campo.errors }}</div>
+</div>

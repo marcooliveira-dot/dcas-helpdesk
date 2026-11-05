@@ -11,7 +11,8 @@ from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
-from .models import Perfil, Equipamento, Movimentacao, HistoricoEquipamento
+from .cadastro_equipamento import FotosEquipamentoForm, gravar_equipamento_com_fotos
+from .models import Perfil, Equipamento, FotoEquipamento, Movimentacao, HistoricoEquipamento
 from .views import perfis_permitidos
 
 
@@ -27,13 +28,6 @@ class DadosForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'email']
         labels = {'first_name':'Nome', 'last_name':'Sobrenome', 'email':'E-mail'}
-
-class ImagemForm(forms.ModelForm):
-    class Meta:
-        model = Equipamento
-        fields = ['imagem_pc']
-        labels = {'imagem_pc':'Foto do computador'}
-        widgets = {'imagem_pc':forms.FileInput(attrs={'accept':'image/*'})}
 
 @login_required
 @perfis_permitidos('admin')
@@ -65,7 +59,7 @@ def ficha(request, pk):
             return redirect('usuario_ficha', pk=pk)
         if acao not in ('dados','senha'):
             return HttpResponseForbidden('Operação inválida.')
-    atuais = Equipamento.objects.filter(colaborador=pessoa).order_by('patrimonio')
+    atuais = Equipamento.objects.filter(colaborador=pessoa).prefetch_related('fotos_pc').order_by('patrimonio')
     historico = Movimentacao.objects.filter(colaborador=pessoa).select_related('equipamento','usuario').order_by('-data','-pk')
     antigos = Equipamento.objects.filter(movimentacoes__colaborador=pessoa).exclude(colaborador=pessoa).distinct().order_by('patrimonio')
     return render(request, 'chamados/acessos/ficha.html', {'pessoa':pessoa, 'pode_editar':pode_editar, 'dados':estilizar(dados), 'senha':estilizar(senha), 'atuais':atuais, 'antigos':antigos, 'historico':Paginator(historico,25).get_page(request.GET.get('page'))})
@@ -91,23 +85,36 @@ def imagem_response(campo):
 @perfis_permitidos('admin','tecnico')
 def foto_pc(request, pk):
     equipamento = get_object_or_404(Equipamento, pk=pk)
-    return imagem_response(equipamento.imagem_pc)
+    if equipamento.imagem_pc:
+        return imagem_response(equipamento.imagem_pc)
+    foto = equipamento.fotos_pc.first()
+    return imagem_response(foto.imagem if foto else None)
+
+
+@login_required
+@perfis_permitidos('admin','tecnico')
+def foto_pc_adicional(request, pk, foto_pk):
+    foto = get_object_or_404(FotoEquipamento, equipamento_id=pk, pk=foto_pk)
+    return imagem_response(foto.imagem)
 
 @login_required
 @perfis_permitidos('admin','tecnico')
 @require_http_methods(['GET','POST'])
 def imagem_editar(request, pk):
     equipamento = get_object_or_404(Equipamento, pk=pk)
-    form = ImagemForm(request.POST if request.method=='POST' else None, request.FILES if request.method=='POST' else None, instance=equipamento)
-    if request.method=='POST' and form.is_valid():
-        if form.has_changed():
-            with transaction.atomic():
-                equipamento=form.save(commit=False)
-                equipamento.save(update_fields=['imagem_pc','atualizado_em'])
-                HistoricoEquipamento.objects.create(equipamento=equipamento,usuario=request.user,acao='Foto atualizada')
-        messages.success(request,'Foto do computador atualizada.')
-        return redirect('detalhe_equipamento',pk=pk)
-    return render(request,'chamados/acessos/operacao.html',{'form':estilizar(form),'titulo':'Foto do computador','equipamento':equipamento,'botao':'Salvar foto'})
+    enviado = request.method == 'POST'
+    form = FotosEquipamentoForm(request.POST if enviado else None, request.FILES if enviado else None)
+    form.fields['fotos'].required = True
+    if enviado and form.is_valid():
+        with gravar_equipamento_com_fotos() as gravadas:
+            form.salvar(equipamento, gravadas)
+            HistoricoEquipamento.objects.create(
+                equipamento=equipamento, usuario=request.user, acao='Fotos adicionadas',
+                descricao=f'{len(gravadas)} foto(s) do computador.',
+            )
+        messages.success(request, 'Fotos adicionadas à galeria.')
+        return redirect('detalhe_equipamento', pk=pk)
+    return render(request, 'chamados/equipamentos/fotos.html', {'form': form, 'equipamento': equipamento})
 
 class DestinoChoice(forms.ModelChoiceField):
     def label_from_instance(self, obj):
