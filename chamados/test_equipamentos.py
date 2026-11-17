@@ -34,6 +34,12 @@ class CadastroEquipamentoTests(TestCase):
         self.url = reverse("novo_equipamento")
         self.dados = {"patrimonio": "PC-001", "nome": "Notebook Teste", "tipo": "notebook"}
 
+    def test_novo_cadastro_nao_exibe_campos_administrativos(self):
+        resposta = self.client.get(self.url)
+        self.assertEqual(resposta.status_code, 200)
+        campos = {"garantia", "data_compra", "fornecedor", "localizacao", "nota_fiscal"}
+        self.assertTrue(campos.isdisjoint(resposta.context["form"].fields))
+
     def test_estoque_sem_termo(self):
         resposta = self.client.post(self.url, self.dados)
         equipamento = Equipamento.objects.get()

@@ -42,7 +42,10 @@ class CadastroEquipamentoForm(EquipamentoForm):
     imagem_pc = None
 
     class Meta(EquipamentoForm.Meta):
-        fields = [field for field in EquipamentoForm.Meta.fields if field != "imagem_pc"]
+        fields = [
+            field for field in EquipamentoForm.Meta.fields
+            if field not in {"imagem_pc", "garantia", "data_compra", "fornecedor", "localizacao", "nota_fiscal"}
+        ]
 
 
 class SeletorFotos(forms.ClearableFileInput):
