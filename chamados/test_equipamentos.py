@@ -34,11 +34,27 @@ class CadastroEquipamentoTests(TestCase):
         self.url = reverse("novo_equipamento")
         self.dados = {"patrimonio": "PC-001", "nome": "Notebook Teste", "tipo": "notebook"}
 
-    def test_novo_cadastro_nao_exibe_campos_administrativos(self):
-        resposta = self.client.get(self.url)
-        self.assertEqual(resposta.status_code, 200)
-        campos = {"garantia", "data_compra", "fornecedor", "localizacao", "nota_fiscal"}
-        self.assertTrue(campos.isdisjoint(resposta.context["form"].fields))
+    def test_cadastro_e_edicao_nao_exibem_campos_removidos(self):
+        equipamento = Equipamento.objects.create(**self.dados)
+        url_edicao = reverse("editar_equipamento", args=[equipamento.pk])
+        campos = {"fabricante", "garantia", "data_compra", "fornecedor", "localizacao", "nota_fiscal"}
+        for url in (self.url, url_edicao):
+            with self.subTest(url=url):
+                resposta = self.client.get(url)
+                self.assertEqual(resposta.status_code, 200)
+                self.assertTrue(campos.isdisjoint(resposta.context["form"].fields))
+                for campo in campos:
+                    self.assertNotContains(resposta, f'name="{campo}"')
+
+    def test_edicao_preserva_nota_fiscal_existente(self):
+        equipamento = Equipamento.objects.create(**self.dados, nota_fiscal="NF-123")
+        resposta = self.client.post(reverse("editar_equipamento", args=[equipamento.pk]), {
+            **self.dados, "nome": "Notebook atualizado", "nota_fiscal": "NF-999",
+        })
+        self.assertRedirects(resposta, reverse("detalhe_equipamento", args=[equipamento.pk]))
+        equipamento.refresh_from_db()
+        self.assertEqual(equipamento.nome, "Notebook atualizado")
+        self.assertEqual(equipamento.nota_fiscal, "NF-123")
 
     def test_estoque_sem_termo(self):
         resposta = self.client.post(self.url, self.dados)

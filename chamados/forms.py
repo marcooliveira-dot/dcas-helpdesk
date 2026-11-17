@@ -103,13 +103,7 @@ class EquipamentoForm(forms.ModelForm):
 
             "categoria",
 
-            "fabricante",
-
-            "fornecedor",
-
             "departamento",
-
-            "localizacao",
 
             "marca",
 
@@ -123,12 +117,6 @@ class EquipamentoForm(forms.ModelForm):
             "sistema_operacional",
 
 
-
-            "nota_fiscal",
-
-            "data_compra",
-
-            "garantia",
 
 
             "foto",
@@ -190,37 +178,7 @@ class EquipamentoForm(forms.ModelForm):
 
             ),
 
-            "fabricante": forms.Select(
-
-                attrs={
-
-                    "class": "form-select"
-
-                }
-
-            ),
-
-            "fornecedor": forms.Select(
-
-                attrs={
-
-                    "class": "form-select"
-
-                }
-
-            ),
-
             "departamento": forms.Select(
-
-                attrs={
-
-                    "class": "form-select"
-
-                }
-
-            ),
-
-            "localizacao": forms.Select(
 
                 attrs={
 
@@ -305,40 +263,6 @@ class EquipamentoForm(forms.ModelForm):
                 attrs={
 
                     "class": "form-control"
-
-                }
-
-            ),
-
-            "nota_fiscal": forms.TextInput(
-
-                attrs={
-
-                    "class": "form-control"
-
-                }
-
-            ),
-
-            "data_compra": forms.DateInput(
-
-                attrs={
-
-                    "class": "form-control",
-
-                    "type": "date"
-
-                }
-
-            ),
-
-            "garantia": forms.DateInput(
-
-                attrs={
-
-                    "class": "form-control",
-
-                    "type": "date"
 
                 }
 
