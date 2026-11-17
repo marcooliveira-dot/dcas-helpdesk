@@ -161,6 +161,7 @@ urlpatterns += [path('notificacoes/', notificacoes.lista, name='notificacoes'), 
 
 from . import termos
 urlpatterns += [path('equipamentos/<int:pk>/termo/', termos.termo_equipamento, name='termo_equipamento')]
+urlpatterns += [path('equipamentos/termo/opcoes/', termos.opcoes_termo, name='opcoes_termo')]
 
 from .equipamento_edicao import editar_equipamento
 urlpatterns += [path('equipamentos/<int:pk>/editar/', editar_equipamento, name='editar_equipamento')]

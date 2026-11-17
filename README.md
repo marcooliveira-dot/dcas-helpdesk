@@ -31,4 +31,6 @@ O cadastro reúne dados da pessoa, do equipamento, fotos e termo de responsabili
 
 A galeria mantém a foto anterior e aceita novos envios de até 10 imagens JPEG, PNG ou WebP (8 MB por imagem e 32 MB somados). As fotos novas ficam em `private_uploads/` por padrão, fora de `MEDIA_ROOT`, e são servidas pelas rotas autenticadas do Django.
 
+O termo de responsabilidade pode reunir o equipamento principal e até 50 itens adicionais ativos e em uso pelo mesmo colaborador. Selecione-os na última etapa de um novo cadastro ou em **Gerar termo de responsabilidade**, nos detalhes de um equipamento existente. O PDF lista todos os patrimônios no Anexo A, integrante do mesmo termo. Esta alteração não exige nova migração.
+
 Para atualizar o servidor, faça backup do banco, aplique `python manage.py migrate` e reinicie a aplicação. Garanta acesso de escrita ao diretório privado pelo processo Django, inclua-o no backup e não o exponha no nginx. Se necessário, ajuste o limite do corpo da requisição no proxy para permitir os uploads previstos.

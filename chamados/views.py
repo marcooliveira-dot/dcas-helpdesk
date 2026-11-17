@@ -328,7 +328,10 @@ def novo_equipamento(request):
     termo_dados = request.POST.copy() if gerar_termo else None
     if gerar_termo and colaborador and not termo_dados.get("termo-nome", "").strip():
         termo_dados["termo-nome"] = colaborador.get_full_name() or colaborador.username
-    termo = TermoForm(termo_dados, prefix="termo", use_required_attribute=False)
+    termo = TermoForm(
+        termo_dados, prefix="termo", use_required_attribute=False,
+        colaborador_id=colaborador.pk if colaborador else None,
+    )
     campos_computador = [campo for campo in form if campo.name != "foto"]
 
     if enviado:

@@ -55,6 +55,11 @@
                 <dt class="col-sm-4">Fotos</dt><dd class="col-sm-8 mb-0" data-resumo="fotos"></dd>
             </dl>
             {{ termo.non_field_errors }}
+            <div class="mb-3">
+                {% include 'chamados/equipamentos/campo.html' with campo=termo.equipamentos_adicionais %}
+                <p id="opcoes-termo-status" class="small text-secondary mt-2 mb-0" role="status"></p>
+                <noscript><p class="small text-secondary">Para incluir outros itens, você também pode salvar o cadastro e gerar o termo nos detalhes do equipamento.</p></noscript>
+            </div>
             <div class="row g-3">
                 <div class="col-md-6">{% include 'chamados/equipamentos/campo.html' with campo=termo.acessorios %}</div>
                 <div class="col-md-6">{% include 'chamados/equipamentos/campo.html' with campo=termo.conservacao %}</div>
@@ -87,9 +92,40 @@
     const pessoa = cadastro.elements.namedItem('colaborador');
     const nome = cadastro.elements.namedItem('termo-nome');
     const cpf = cadastro.elements.namedItem('termo-cpf');
+    const adicionais = cadastro.elements.namedItem('termo-equipamentos_adicionais');
+    const opcoesStatus = document.getElementById('opcoes-termo-status');
+    let consulta = 0;
     let etapa = Number(cadastro.dataset.etapa) - 1;
 
     const quantidadeFotos = () => fotos.files.length + ' foto(s) selecionada(s)';
+
+    async function carregarAdicionais() {
+        const versao = ++consulta;
+        if (!pessoa.value) {
+            adicionais.disabled = true;
+            opcoesStatus.textContent = 'Vincule um usuário na primeira etapa para incluir outros equipamentos.';
+            return;
+        }
+        opcoesStatus.textContent = 'Carregando os equipamentos vinculados…';
+        try {
+            const url = new URL("{% url 'opcoes_termo' %}", window.location.origin);
+            url.searchParams.set('colaborador', pessoa.value);
+            const resposta = await fetch(url, {headers: {'Accept': 'application/json'}});
+            if (!resposta.ok) throw new Error('Falha ao carregar');
+            const dados = await resposta.json();
+            if (versao !== consulta) return;
+            const selecionados = new Set([...adicionais.selectedOptions].map(opcao => opcao.value));
+            adicionais.replaceChildren(...dados.equipamentos.map(item =>
+                new Option(item.rotulo, String(item.id), false, selecionados.has(String(item.id)))
+            ));
+            adicionais.disabled = !dados.equipamentos.length;
+            opcoesStatus.textContent = dados.equipamentos.length ? '' : 'Este colaborador não tem outros equipamentos disponíveis para o termo.';
+        } catch {
+            if (versao === consulta) {
+                opcoesStatus.textContent = 'Não foi possível atualizar a lista. Volte uma etapa e avance para tentar novamente.';
+            }
+        }
+    }
 
     function mostrar(indice, focar = true) {
         etapa = indice;
@@ -105,6 +141,7 @@
         [anterior, seguinte, acoes].forEach(botao => botao.classList.toggle('d-none', botao.hidden));
 
         if (!acoes.hidden) {
+            carregarAdicionais();
             const resumo = document.getElementById('resumo-cadastro');
             resumo.hidden = false;
             resumo.classList.remove('d-none');
@@ -126,6 +163,10 @@
 
     fotos.addEventListener('change', () => {
         document.getElementById('fotos-selecionadas').textContent = quantidadeFotos();
+    });
+    pessoa.addEventListener('change', () => {
+        consulta++;
+        adicionais.replaceChildren();
     });
     anterior.addEventListener('click', () => mostrar(etapa - 1));
     seguinte.addEventListener('click', avancar);
