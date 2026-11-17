@@ -16,6 +16,8 @@ from .cadastro_equipamento import (
     gravar_equipamento_com_fotos,
 )
 from .forms import ChamadoForm
+from .catalogo import SERVICOS
+from .fila import ENCERRADOS, VISOES, aplicar_visao, com_prazo, visoes_fila
 from .models import (
     Categoria,
     Chamado,
@@ -91,7 +93,12 @@ def painel_admin(request):
     prioridade = request.GET.get("prioridade", "").strip()
     categoria = request.GET.get("categoria", "").strip()
 
-    chamados = Chamado.objects.select_related(
+    agora = timezone.now()
+    visao = request.GET.get("fila", "")
+    if visao not in {nome for nome, _, _ in VISOES}:
+        visao = ""
+    base_chamados = com_prazo(Chamado.objects.all())
+    chamados = base_chamados.select_related(
         "criado_por",
         "atribuido_a",
     ).order_by("-data_criacao")
@@ -121,6 +128,8 @@ def painel_admin(request):
     else:
         categoria = ""
 
+    chamados = aplicar_visao(chamados, visao, request.user, agora)
+
     # Import local para não alterar os imports existentes.
     from django.core.paginator import Paginator
 
@@ -136,6 +145,9 @@ def painel_admin(request):
     )
 
     contexto = {
+        "fila_visoes": visoes_fila(base_chamados, request.user, agora),
+        "fila_atual": visao,
+        "prazo_agora": agora,
         "total_chamados": Chamado.objects.count(),
         "abertos": Chamado.objects.filter(status="aberto").count(),
         "andamento": Chamado.objects.filter(
@@ -205,6 +217,7 @@ def painel_admin(request):
 @login_required
 @perfis_permitidos("tecnico", "admin")
 def painel_tecnico(request):
+    agora = timezone.now()
     chamados = (
         Chamado.objects
         .select_related("criado_por", "atribuido_a")
@@ -213,6 +226,7 @@ def painel_tecnico(request):
     )
 
     contexto = {
+        "fila_visoes": visoes_fila(com_prazo(chamados), request.user, agora),
         "chamados": chamados,
         "abertos": chamados.filter(status="aberto").count(),
         "andamento": chamados.filter(status="em_andamento").count(),
@@ -517,6 +531,9 @@ def devolver_equipamento(request, id):
 
 @login_required
 def novo_chamado_unico(request):
+    servico = request.GET.get("servico", "")
+    if servico not in SERVICOS:
+        servico = ""
     if request.method == "POST":
         form = ChamadoForm(request.POST, request.FILES)
 
@@ -529,18 +546,33 @@ def novo_chamado_unico(request):
             messages.success(request, "Chamado aberto com sucesso.")
             return redirect("chamado_sucesso")
     else:
-        form = ChamadoForm()
+        form = ChamadoForm(initial={"categoria": servico})
 
     return render(
         request,
         "chamados/chamado/novo.html",
-        {"form": form},
+        {"form": form, "servicos": SERVICOS, "servico": servico, "orientacao": SERVICOS[servico][3] if servico else ""},
     )
 
 
 @login_required
 def chamado_sucesso(request):
     return render(request, "chamados/chamado/sucesso.html")
+
+
+@login_required
+@perfis_permitidos("tecnico", "admin")
+@require_POST
+def assumir_chamado(request, pk):
+    chamado = get_object_or_404(Chamado, pk=pk)
+    assumido = Chamado.objects.filter(pk=pk, atribuido_a__isnull=True).exclude(
+        status__in=ENCERRADOS,
+    ).update(atribuido_a=request.user, data_atualizacao=timezone.now())
+    if assumido:
+        messages.success(request, "Chamado atribuído a você.")
+    else:
+        messages.warning(request, "O chamado já tem responsável ou foi finalizado.")
+    return redirect("detalhe_chamado", pk=chamado.pk)
 
 
 @login_required

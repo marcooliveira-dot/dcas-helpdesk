@@ -10,6 +10,7 @@ from .views import (
     novo_chamado_unico,
     chamado_sucesso,
     finalizar_chamado,
+    assumir_chamado,
 
     # Equipamentos
     equipamentos,
@@ -72,6 +73,7 @@ urlpatterns = [
         chamado_sucesso,
         name="chamado_sucesso"
     ),
+    path("chamado/<int:pk>/assumir/", assumir_chamado, name="assumir_chamado"),
 
     path(
         "chamado/finalizar/<int:id>/",

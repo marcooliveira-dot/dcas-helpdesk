@@ -84,8 +84,12 @@
             <span class="dcas-section-icon"><i class="bi bi-layout-text-window-reverse" aria-hidden="true"></i></span>
         </div>
 
+        {% url 'painel_admin' as fila_url %}
+        {% include 'chamados/fila/visoes.html' with fila_ancora='#chamados' %}
+
         <form method="get" action="{% url 'painel_admin' %}#chamados"
               class="row g-3 mb-4">
+            {% if fila_atual %}<input type="hidden" name="fila" value="{{ fila_atual }}">{% endif %}
             <div class="col-12 col-lg-4">
                 <label for="busca" class="form-label">Pesquisar</label>
                 <input
@@ -159,6 +163,7 @@
                         <th scope="col">Categoria</th>
                         <th scope="col">Prioridade</th>
                         <th scope="col">Status</th>
+                        <th scope="col">Prazo interno</th>
                         <th scope="col">Solicitante</th>
                         <th scope="col">Responsável</th>
                         <th scope="col">Abertura</th>
@@ -193,6 +198,10 @@
                                 <span class="badge {% if chamado.status == 'aberto' %}bg-danger{% elif chamado.status == 'em_andamento' %}bg-primary{% elif chamado.status == 'aguardando' %}bg-warning text-dark{% elif chamado.status == 'resolvido' %}bg-success{% else %}bg-secondary{% endif %}">
                                     {{ chamado.get_status_display }}
                                 </span>
+                            </td>
+
+                            <td>
+                                {% include 'chamados/fila/prazo.html' %}
                             </td>
 
                             <td>
@@ -234,7 +243,7 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="8" class="dcas-empty">
+                            <td colspan="9" class="dcas-empty">
                                 <i class="bi bi-inbox" aria-hidden="true"></i>
                                 <strong>Nenhum chamado por aqui</strong>
                                 <span>Os novos atendimentos aparecerão nesta lista. Você também pode ajustar os filtros.</span>

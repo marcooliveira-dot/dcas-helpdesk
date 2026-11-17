@@ -1,0 +1,11 @@
+<nav class="d-flex flex-wrap gap-2 mb-3" aria-label="Filas de atendimento">
+    {% for chave, rotulo, icone, total in fila_visoes %}
+        <a class="btn {% if fila_atual == chave %}btn-primary{% else %}btn-outline-primary{% endif %}"
+           href="{{ fila_url }}{% if chave %}?fila={{ chave }}{% endif %}{{ fila_ancora }}"
+           {% if fila_atual == chave %}aria-current="page"{% endif %}>
+            <i class="bi {{ icone }}" aria-hidden="true"></i>
+            {{ rotulo }} <strong>{{ total }}</strong>
+        </a>
+    {% endfor %}
+</nav>
+<p class="small text-secondary">As filas mostram chamados ativos. Os prazos são metas internas em horas corridas, contadas desde a abertura.</p>

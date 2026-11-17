@@ -1,0 +1,8 @@
+{% if chamado.prazo and chamado.status != 'resolvido' and chamado.status != 'fechado' %}
+    <span class="badge {% if chamado.prazo <= prazo_agora %}bg-danger{% else %}bg-secondary{% endif %}">
+        {% if chamado.prazo <= prazo_agora %}Prazo vencido{% else %}No prazo{% endif %}
+    </span>
+    <div class="text-secondary mt-1 text-nowrap">{{ chamado.prazo|date:'d/m/Y H:i' }}</div>
+{% else %}
+    <span class="text-secondary">—</span>
+{% endif %}

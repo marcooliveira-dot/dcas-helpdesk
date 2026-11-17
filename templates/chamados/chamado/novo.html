@@ -1,4 +1,50 @@
 {% extends 'base.html' %}
 {% block title %}Abrir chamado | DCAS HelpDesk{% endblock %}
 {% block page_title %}Abrir chamado{% endblock %}
-{% block content %}<section class="card border-0 p-4 mx-auto" style="max-width:850px"><p>Descreva o problema para a equipe de T.I. Campos com * são obrigatórios.</p><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}<div class="text-danger">{{ field.errors }}</div></div>{% endfor %}<button type="submit" class="btn btn-primary">Enviar chamado</button><a class="btn btn-outline-secondary ms-2" href="{% url 'lista_chamados' %}">Cancelar</a></form></section>{% endblock %}
+{% block content %}
+<div class="mx-auto" style="max-width:960px">
+    <section class="mb-4" aria-labelledby="catalogo-titulo">
+        <span class="dcas-eyebrow">Catálogo de suporte</span>
+        <h2 id="catalogo-titulo" class="h4">Em que podemos ajudar?</h2>
+        <p class="text-secondary">Escolha um serviço para preencher a categoria ou vá direto ao formulário.</p>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-2">
+            {% for chave, item in servicos.items %}
+                <div class="col">
+                    <a class="card {% if chave == servico %}border-3{% endif %} h-100 p-3 text-decoration-none"
+                       href="?servico={{ chave }}#form-chamado" {% if chave == servico %}aria-current="true"{% endif %}>
+                        <strong class="text-primary"><i class="bi {{ item.1 }} me-2" aria-hidden="true"></i>{{ item.0 }}</strong>
+                        <span class="text-secondary small">{{ item.2 }}</span>
+                    </a>
+                </div>
+            {% endfor %}
+            <div class="col">
+                <a href="#form-chamado" class="card h-100 p-3 text-decoration-none">
+                    <strong class="text-primary"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Preencher manualmente</strong>
+                    <span class="text-secondary small">Escolha a categoria no formulário.</span>
+                </a>
+            </div>
+        </div>
+    </section>
+    <section class="card p-4" id="form-chamado" aria-labelledby="form-chamado-titulo">
+        <h2 id="form-chamado-titulo" class="h5">Dados do chamado</h2>
+        {% if orientacao %}<div class="alert alert-info">{{ orientacao }}</div>{% endif %}
+        <p class="text-secondary">Campos marcados com * são obrigatórios.</p>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                    <div class="text-danger">{{ field.errors }}</div>
+                </div>
+            {% endfor %}
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-primary">Enviar chamado</button>
+                <a class="btn btn-outline-secondary" href="{% url 'lista_chamados' %}">Cancelar</a>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

@@ -6,6 +6,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden
+from django.utils import timezone
+from .fila import VISOES, aplicar_visao, com_prazo, visoes_fila
 from .models import Chamado, RespostaChamado, Movimentacao, Manutencao, Defeito, Equipamento
 from .views import perfis_permitidos, _obter_perfil
 
@@ -33,7 +35,17 @@ def paginar(request, qs):
 @login_required
 def lista_chamados(request):
     qs = Chamado.objects.select_related('criado_por', 'atribuido_a').order_by('-data_criacao')
-    if not gestor(request.user):
+    equipe = gestor(request.user)
+    contexto = {}
+    if equipe:
+        agora = timezone.now()
+        qs = com_prazo(qs)
+        visao = request.GET.get("fila", "")
+        if visao not in {nome for nome, _, _ in VISOES}:
+            visao = ""
+        contexto = {"fila_visoes": visoes_fila(qs, request.user, agora), "fila_atual": visao, "prazo_agora": agora}
+        qs = aplicar_visao(qs, visao, request.user, agora)
+    else:
         qs = qs.filter(criado_por=request.user)
     busca = request.GET.get('busca', '').strip()
     status = request.GET.get('status', '')
@@ -44,7 +56,7 @@ def lista_chamados(request):
     else:
         status = ''
         qs = qs.exclude(status__in=['resolvido', 'fechado'])
-    return render(request, 'chamados/revisao/chamados.html', {**paginar(request, qs), 'busca': busca, 'status': status, 'status_opcoes': Chamado.STATUS})
+    return render(request, 'chamados/revisao/chamados.html', {**contexto, **paginar(request, qs), 'busca': busca, 'status': status, 'status_opcoes': Chamado.STATUS})
 
 
 class RespostaForm(forms.ModelForm):
@@ -71,6 +83,8 @@ def detalhe_chamado(request, pk):
     pode_gerenciar = gestor(request.user)
     if not pode_gerenciar:
         qs = qs.filter(criado_por=request.user)
+    else:
+        qs = com_prazo(qs)
     chamado = get_object_or_404(qs, pk=pk)
     resposta = RespostaForm()
     atendimento = AtendimentoForm(instance=chamado) if pode_gerenciar else None
@@ -95,7 +109,7 @@ def detalhe_chamado(request, pk):
                 obj.save()
                 messages.success(request, 'Resposta registrada.')
                 return redirect('detalhe_chamado', pk=pk)
-    return render(request, 'chamados/revisao/detalhe_chamado.html', {'chamado': chamado, 'respostas': chamado.respostas.select_related('usuario').order_by('data'), 'form': formatar(resposta), 'atendimento': formatar(atendimento) if atendimento else None})
+    return render(request, 'chamados/revisao/detalhe_chamado.html', {'chamado': chamado, 'respostas': chamado.respostas.select_related('usuario').order_by('data'), 'form': formatar(resposta), 'atendimento': formatar(atendimento) if atendimento else None, 'prazo_agora': timezone.now()})
 
 
 class ManutencaoForm(forms.ModelForm):

@@ -1,5 +1,16 @@
 TESTE TESTE
 
+## Central de atendimento: filas, prazos e catálogo
+
+- Administradores e técnicos podem acompanhar chamados ativos **Comigo**, **Sem responsável**, **Urgentes** e com **Prazo vencido**. Os indicadores contam toda a fila ativa; a pesquisa e o filtro por status afetam apenas a lista exibida.
+- **Assumir chamado** atribui um chamado ativo sem responsável ao técnico ou administrador conectado, sem sobrescrever o trabalho de outro agente.
+- Os prazos iniciais são metas internas em horas corridas desde a abertura: urgente = 4 h, alta = 24 h, média = 48 h e baixa = 72 h. A prioridade atual define a meta; aguardar o cliente não pausa o relógio. Chamados resolvidos e fechados não entram na fila de vencidos. Para ajustar as metas, configure `HELPDESK_PRAZOS_HORAS` nas configurações Django (por exemplo, `{"urgente": 2, "alta": 12, "media": 24, "baixa": 48}`). Não há calendário de dias úteis nem escalonamento automático.
+- Na abertura, o catálogo sugere a categoria e mostra orientações sobre o que informar, mantendo a opção manual.
+
+Não exige migração. Atualize o código e reinicie a aplicação.
+
+Referências de produto: [InvGate Service Management](https://invgate.com/service-management) e [Freshservice](https://www.freshworks.com/freshservice/features/).
+
 ## Ajustes de chamados — 06/10/2026
 
 - Anexos PDF, imagens e textos compatíveis abrem no navegador em uma nova aba. Os demais formatos usam download conforme o suporte do navegador.
