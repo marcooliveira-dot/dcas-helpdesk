@@ -317,12 +317,6 @@ def equipamentos(request):
 
 @login_required
 @perfis_permitidos("tecnico", "admin")
-def controle_equipamentos(request):
-    return equipamentos(request)
-
-
-@login_required
-@perfis_permitidos("tecnico", "admin")
 @never_cache
 @require_http_methods(["GET", "POST"])
 def novo_equipamento(request):

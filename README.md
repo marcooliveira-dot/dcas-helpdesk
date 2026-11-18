@@ -1,5 +1,9 @@
 TESTE TESTE
 
+## Controle de aparelhos por base
+
+A aba **Controle de aparelhos** reaproveita as localizações existentes como bases e lista patrimônio, aparelho, base, responsável e status. É possível buscar por nome, patrimônio ou série e filtrar por base ou por aparelhos sem base definida. Administradores cadastram bases; administradores e técnicos podem alterar vínculos e consultar as últimas mudanças. Alterar a base não muda o responsável nem o status do equipamento. Não exige nova migração.
+
 ## Central de atendimento: filas, prazos e catálogo
 
 - Administradores e técnicos podem acompanhar chamados ativos **Comigo**, **Sem responsável**, **Urgentes** e com **Prazo vencido**. Os indicadores contam toda a fila ativa; a pesquisa e o filtro por status afetam apenas a lista exibida.

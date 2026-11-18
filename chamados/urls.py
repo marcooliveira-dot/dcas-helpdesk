@@ -1,5 +1,7 @@
 from django.urls import path
 
+from .controle_aparelhos import alterar_base_aparelho, controle_equipamentos, nova_base
+
 from .views import (
     dashboard_redirect,
     painel_colaborador,
@@ -14,7 +16,6 @@ from .views import (
 
     # Equipamentos
     equipamentos,
-    controle_equipamentos,
     novo_equipamento,
     detalhe_equipamento,
     retirar_equipamento,
@@ -96,6 +97,8 @@ urlpatterns = [
         controle_equipamentos,
         name="controle_equipamentos"
     ),
+    path("equipamentos/bases/nova/", nova_base, name="nova_base"),
+    path("equipamentos/<int:pk>/base/", alterar_base_aparelho, name="alterar_base_aparelho"),
 
     path(
         "equipamentos/novo/",

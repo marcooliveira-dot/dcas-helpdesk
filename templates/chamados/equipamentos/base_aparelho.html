@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Alterar base do aparelho | DCAS HelpDesk{% endblock %}
+{% block page_title %}Alterar base do aparelho{% endblock %}
+{% block content %}
+<section class="card p-4 mb-4" style="max-width:780px">
+    <h2 class="h5">{{ equipamento.patrimonio }} — {{ equipamento.nome }}</h2>
+    <p class="text-secondary">Base atual: <strong>{{ equipamento.localizacao|default:'Sem base definida' }}</strong>. O responsável pelo aparelho não muda.</p>
+    {% if not form.fields.base.queryset.exists %}
+        <p class="alert alert-info">Nenhuma base cadastrada. Um administrador pode cadastrar uma base no Controle de aparelhos.</p>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        {% include 'chamados/equipamentos/campo.html' with campo=form.base %}
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <button class="btn btn-primary" type="submit">Salvar base do aparelho</button>
+            <a href="{% url 'controle_equipamentos' %}" class="btn btn-outline-secondary">Voltar ao controle</a>
+        </div>
+    </form>
+</section>
+<section class="card p-4" style="max-width:780px">
+    <h2 class="h5">Últimas mudanças de base</h2>
+    <ul class="list-group list-group-flush">
+        {% for registro in historico %}
+            <li class="list-group-item px-0">
+                <strong>{{ registro.descricao }}</strong>
+                <div class="text-secondary small">{{ registro.data|date:'d/m/Y H:i' }} · {% if registro.usuario %}{{ registro.usuario.get_full_name|default:registro.usuario.username }}{% else %}Usuário indisponível{% endif %}</div>
+            </li>
+        {% empty %}
+            <li class="list-group-item px-0 text-secondary">Nenhuma mudança de base registrada.</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Controle de aparelhos | DCAS HelpDesk{% endblock %}
+{% block page_title %}Controle de aparelhos{% endblock %}
+{% block content %}
+<div class="dcas-dashboard-intro">
+    <div>
+        <span class="dcas-eyebrow">Inventário por base</span>
+        <h2>Onde estão os aparelhos?</h2>
+        <p>Encontre um aparelho pelo patrimônio e acompanhe a base atual de cada item.</p>
+    </div>
+    {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' %}
+        <a href="{% url 'nova_base' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Cadastrar base</a>
+    {% endif %}
+</div>
+
+<div class="row row-cols-1 row-cols-sm-3 g-3 mb-4">
+    <div class="col"><div class="card p-3 h-100"><span>Total de aparelhos</span><strong class="fs-3">{{ total }}</strong></div></div>
+    <div class="col"><div class="card p-3 h-100"><span>Com base definida</span><strong class="fs-3">{{ com_base }}</strong></div></div>
+    <div class="col"><a class="card p-3 h-100 text-decoration-none" href="?base=sem-base"><span>Sem base definida</span><strong class="fs-3">{{ sem_base }}</strong></a></div>
+</div>
+
+<section class="card p-4" aria-labelledby="lista-aparelhos">
+    <h2 id="lista-aparelhos" class="h5 mb-3">Aparelhos por base</h2>
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-5">
+            <label class="form-label" for="busca">Nome, patrimônio ou número de série</label>
+            <input class="form-control" type="search" name="busca" id="busca" maxlength="150" value="{{ busca }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="base">Base</label>
+            <select class="form-select" name="base" id="base">
+                <option value="">Todas as bases</option>
+                <option value="sem-base" {% if base == 'sem-base' %}selected{% endif %}>Sem base definida</option>
+                {% for item in bases %}
+                    <option value="{{ item.pk }}" {% if base == item.pk|stringformat:'s' %}selected{% endif %}>{{ item.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end gap-2">
+            <button class="btn btn-primary" type="submit">Filtrar</button>
+            <a class="btn btn-outline-secondary" href="{% url 'controle_equipamentos' %}">Limpar</a>
+        </div>
+    </form>
+    <p class="text-secondary small">{{ pagina.paginator.count }} aparelho{{ pagina.paginator.count|pluralize:"s" }} na lista.</p>
+    <div class="table-responsive" tabindex="0" role="region" aria-label="Tabela de aparelhos por base">
+        <table class="table table-hover align-middle">
+            <thead><tr><th scope="col">Patrimônio</th><th scope="col">Aparelho</th><th scope="col">Base atual</th><th scope="col">Responsável</th><th scope="col">Status</th><th scope="col">Ação</th></tr></thead>
+            <tbody>
+                {% for aparelho in pagina %}
+                    <tr>
+                        <td><a href="{% url 'detalhe_equipamento' aparelho.pk %}">{{ aparelho.patrimonio }}</a></td>
+                        <td><strong>{{ aparelho.nome }}</strong><div class="text-secondary">{{ aparelho.get_tipo_display }}</div></td>
+                        <td><span class="badge {% if aparelho.localizacao_id %}bg-primary{% else %}bg-warning{% endif %}">{{ aparelho.localizacao|default:'Sem base definida' }}</span></td>
+                        <td>{% if aparelho.colaborador %}{{ aparelho.colaborador.get_full_name|default:aparelho.colaborador.username }}{% else %}—{% endif %}</td>
+                        <td>{{ aparelho.get_status_display }}</td>
+                        <td><a class="btn btn-sm btn-outline-primary text-nowrap" href="{% url 'alterar_base_aparelho' aparelho.pk %}" aria-label="Alterar base de {{ aparelho.patrimonio }}">Alterar base</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="dcas-empty"><strong>Nenhum aparelho encontrado.</strong><span>Confira o patrimônio ou ajuste os filtros.</span></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if pagina.has_other_pages %}
+        <nav class="d-flex flex-wrap align-items-center gap-2 mt-3" aria-label="Paginação dos aparelhos">
+            {% if pagina.has_previous %}<a class="btn btn-outline-primary" href="{% querystring page=pagina.previous_page_number %}">Anterior</a>{% endif %}
+            <span>Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+            {% if pagina.has_next %}<a class="btn btn-outline-primary" href="{% querystring page=pagina.next_page_number %}">Próxima</a>{% endif %}
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}

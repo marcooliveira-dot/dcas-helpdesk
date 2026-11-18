@@ -67,12 +67,19 @@
                     {% if request.user.is_superuser or request.user.perfil.tipo == 'admin' or request.user.perfil.tipo == 'tecnico' %}<li>
                         <a
                             href="{% url 'equipamentos' %}"
-                            {% if pagina == 'equipamentos' or pagina == 'controle_equipamentos' or pagina == 'novo_equipamento' or pagina == 'detalhe_equipamento' %}
+                            {% if pagina == 'equipamentos' or pagina == 'novo_equipamento' or pagina == 'detalhe_equipamento' %}
                                 aria-current="page"
                             {% endif %}
                         >
                             <i class="bi bi-laptop" aria-hidden="true"></i>
                             <span>Equipamentos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'controle_equipamentos' %}"
+                           {% if pagina == 'controle_equipamentos' or pagina == 'nova_base' or pagina == 'alterar_base_aparelho' %}aria-current="page"{% endif %}>
+                            <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                            <span>Controle de aparelhos</span>
                         </a>
                     </li>{% endif %}
 
